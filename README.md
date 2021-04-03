@@ -17,4 +17,10 @@ https://github.com/gkostka/stm32f429disco-lwext4 An example using USB drive as a
 
 https://github.com/autoas/as/tree/master/com/as.infrastructure/system/fs  Example of mouting multiple partitions (RTOS).
 
+Key Files:
+
+- TeensyEXT4test.ino example file
+- blockdev.c and blockdev.h the main USB drive access files for lwext4
+- ext4MscHost.cpp and ext4MscHost.h the wrapper files to access MSC
+
 More to come...
