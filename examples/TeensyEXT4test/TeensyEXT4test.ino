@@ -297,10 +297,10 @@ void setup()
 
   test_lwext4_cleanup();
 
-  if (!test_lwext4_dir_test(dir_cnt))
-	Serial.printf("test_lwext4_dir_test(dir_cnt): Failed\n");
-  else
-	Serial.printf("test_lwext4_dir_test(dir_cnt): Passed\n");
+//  if (!test_lwext4_dir_test(dir_cnt))
+//	Serial.printf("test_lwext4_dir_test(dir_cnt): Failed\n");
+//  else
+//	Serial.printf("test_lwext4_dir_test(dir_cnt): Passed\n");
 
 
   Serial.printf("Done...\n");
