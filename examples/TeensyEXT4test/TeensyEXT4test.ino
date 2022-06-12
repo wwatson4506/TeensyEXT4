@@ -1,19 +1,91 @@
-//  MSC USB Drive testing 
+//  Teensy USB Drive lwext4 testing 
+// Based on lwext4 by: Grzegorz Kostka (kostka.grzegorz@gmail.com)
+// Modified by: Wareen Watson for the Teensy 4.x
    
-#include "Arduino.h"
-//#include "mscFS.h"
 #include "USBHost_t36.h"
 #include "ext4.h"
-#include "blockdev.h"
+#include "usb_bd.h"
 #include "ext4_mbr.h"
-#include "ext4MscHost.h"
 #include <string.h>
 
-extern void mscHostInit(void);
-extern int mscInit(void);
+// ******** These are changable for testing purposes *****************
+/**@brief   Read-write size*/
+static int rw_szie = 32 * 1024;
+
+/**@brief   Read-write size*/
+static int rw_count = 1000;
+
+/**@brief   Directory test count*/
+static int dir_cnt = 0;
+
+/**@brief   Cleanup after test.*/
+static bool cleanup_flag = false;
+
+/**@brief   Block device stats.*/
+static bool bstat = false;
+
+/**@brief   Superblock stats.*/
+static bool sbstat = false;
+
+/**@brief   Verbose mode*/
+static bool verbose = false;
+//********************************************************************
+
+// TODO: This needs to change.
+extern 	USBHost myusb;
 
 static struct ext4_bcache *bc;
 static struct ext4_blockdev *bd;
+
+struct ext4_io_stats {
+	float io_read;
+	float io_write;
+	float cpu;
+};
+
+void io_timings_clear(void);
+const struct ext4_io_stats *io_timings_get(uint32_t time_sum_ms);
+
+// Directory entry types.
+static const char *entry_to_str(uint8_t type)
+{
+	switch (type) {
+	case EXT4_DE_UNKNOWN:
+		return "[unk] ";
+	case EXT4_DE_REG_FILE:
+		return "[fil] ";
+	case EXT4_DE_DIR:
+		return "[dir] ";
+	case EXT4_DE_CHRDEV:
+		return "[cha] ";
+	case EXT4_DE_BLKDEV:
+		return "[blk] ";
+	case EXT4_DE_FIFO:
+		return "[fif] ";
+	case EXT4_DE_SOCK:
+		return "[soc] ";
+	case EXT4_DE_SYMLINK:
+		return "[sym] ";
+	default:
+		break;
+	}
+	return "[???]";
+}
+
+static struct ext4_blockdev *parent_blockdev;
+struct ext4_blockdev *part_blockdev;
+static struct ext4_mbr_bdevs bdevs;
+
+static long int get_ms(void) { return millis(); }
+
+// Not used.
+void io_timings_clear(void)
+{
+}
+const struct ext4_io_stats *io_timings_get(uint32_t time_sum_ms)
+{
+	return NULL;
+}
 
 // A small hex dump function
 void hexDump(const void *ptr, uint32_t len)
@@ -43,40 +115,19 @@ void hexDump(const void *ptr, uint32_t len)
 
 }
 
-static const char *entry_to_str(uint8_t type)
-{
-	switch (type) {
-	case EXT4_DE_UNKNOWN:
-		return "[unk] ";
-	case EXT4_DE_REG_FILE:
-		return "[fil] ";
-	case EXT4_DE_DIR:
-		return "[dir] ";
-	case EXT4_DE_CHRDEV:
-		return "[cha] ";
-	case EXT4_DE_BLKDEV:
-		return "[blk] ";
-	case EXT4_DE_FIFO:
-		return "[fif] ";
-	case EXT4_DE_SOCK:
-		return "[soc] ";
-	case EXT4_DE_SYMLINK:
-		return "[sym] ";
-	default:
-		break;
-	}
-	return "[???]";
+static void printf_io_timings(long int diff) {
+	const struct ext4_io_stats *stats = io_timings_get(diff);
+	if (!stats)
+		return;
+
+	printf("io_timings:\n");
+	printf("  io_read: %.3f%%\n", (double)stats->io_read);
+	printf("  io_write: %.3f%%\n", (double)stats->io_write);
+	printf("  io_cpu: %.3f%%\n", (double)stats->cpu);
 }
 
-static struct ext4_blockdev *parent_blockdev;
-struct ext4_blockdev *part_blockdev;
-static struct ext4_mbr_bdevs bdevs;
-static int dir_cnt = 1;
-
-static bool mbr_scan(void)
-{
+static bool mbr_scan(void) {
 	int r;
-//	Serial.printf("ext4_mbr\n");
 	r = ext4_mbr_scan(parent_blockdev, &bdevs);
 	if (r != EOK) {
 		Serial.printf("ext4_mbr_scan error %d\n",r);
@@ -91,7 +142,6 @@ static bool mbr_scan(void)
 			Serial.printf("\tempty/unknown\n");
 			continue;
 		}
-
 		Serial.printf(" offeset: 0x%" PRIx64 ", %" PRIu64 "MB\n",
 			bdevs.partitions[i].part_offset,
 			bdevs.partitions[i].part_offset / (1024 * 1024));
@@ -101,12 +151,10 @@ static bool mbr_scan(void)
 
 
 	}
-
 	return true;
 }
 
-bool test_lwext4_mount(struct ext4_blockdev *bdev, struct ext4_bcache *bcache)
-{
+bool test_lwext4_mount(struct ext4_blockdev *bdev, struct ext4_bcache *bcache) {
 	int r;
 
 	bc = bcache;
@@ -117,8 +165,8 @@ bool test_lwext4_mount(struct ext4_blockdev *bdev, struct ext4_bcache *bcache)
 		return false;
 	}
 
+  if (verbose)
 	ext4_dmask_set(DEBUG_ALL);
-
 	r = ext4_device_register(bd, "ext4_fs");
 	if (r != EOK) {
 		Serial.printf("ext4_device_register: rc = %d\n", r);
@@ -139,18 +187,140 @@ bool test_lwext4_mount(struct ext4_blockdev *bdev, struct ext4_bcache *bcache)
 	}
 
 // Journaling not working yet
-//	r = ext4_journal_start("/mp/");
-//	if (r != EOK) {
-//		Serial.printf("ext4_journal_start: rc = %d\n", r);
-//		return false;
-//	}
+	r = ext4_journal_start("/");
+	if (r != EOK) {
+		Serial.printf("ext4_journal_start: rc = %d\n", r);
+		return false;
+	}
 
 	ext4_cache_write_back("/mp/", 1);
 	return true;
 }
 
-void test_lwext4_cleanup(void)
-{
+bool test_lwext4_umount(void) {
+	int r;
+
+	ext4_cache_write_back("/mp/", 0);
+
+	r = ext4_journal_stop("/mp/");
+	if (r != EOK) {
+		Serial.printf("ext4_journal_stop: fail %d", r);
+		return false;
+	}
+
+	r = ext4_umount("/mp/");
+	if (r != EOK) {
+		Serial.printf("ext4_umount: fail %d", r);
+		return false;
+	}
+	return true;
+}
+
+static int verify_buf(const unsigned char *b, size_t len, unsigned char c){
+	size_t i;
+	for (i = 0; i < len; ++i) {
+		if (b[i] != c)
+			return c - b[i];
+	}
+
+	return 0;
+}
+
+bool test_lwext4_file_test(uint8_t *rw_buff, uint32_t rw_size, uint32_t rw_count) {
+	int r;
+	size_t size;
+	uint32_t i;
+	long int start;
+	long int stop;
+	long int diff;
+	uint32_t kbps;
+	uint64_t size_bytes;
+
+	ext4_file f;
+
+	printf("file_test:\n");
+	printf("  rw size: %" PRIu32 "\n", rw_size);
+	printf("  rw count: %" PRIu32 "\n", rw_count);
+
+	/*Add hello world file.*/
+	r = ext4_fopen(&f, "/mp/hello.txt", "wb");
+	r = ext4_fwrite(&f, "Hello World !\n", strlen("Hello World !\n"), 0);
+	r = ext4_fclose(&f);
+
+	io_timings_clear();
+	start = get_ms();
+	r = ext4_fopen(&f, "/mp/test1", "wb");
+	if (r != EOK) {
+		printf("ext4_fopen ERROR = %d\n", r);
+		return false;
+	}
+
+	printf("ext4_write: %" PRIu32 " * %" PRIu32 " ...\n", rw_size,
+	       rw_count);
+	for (i = 0; i < rw_count; ++i) {
+
+		memset(rw_buff, i % 10 + '0', rw_size);
+
+		r = ext4_fwrite(&f, rw_buff, rw_size, &size);
+
+		if ((r != EOK) || (size != rw_size))
+			break;
+	}
+
+	if (i != rw_count) {
+		printf("  file_test: rw_count = %" PRIu32 "\n", i);
+		return false;
+	}
+
+	stop = get_ms();
+	diff = stop - start;
+	size_bytes = rw_size * rw_count;
+	size_bytes = (size_bytes * 1000) / 1024;
+	kbps = (size_bytes) / (diff + 1);
+	printf("  write time: %d ms\n", (int)diff);
+	printf("  write speed: %" PRIu32 " KB/s\n", kbps);
+	printf_io_timings(diff);
+	r = ext4_fclose(&f);
+
+	io_timings_clear(); // Not used.
+	start = get_ms();
+	r = ext4_fopen(&f, "/mp/test1", "r+");
+	if (r != EOK) {
+		printf("ext4_fopen ERROR = %d\n", r);
+		return false;
+	}
+
+	printf("ext4_read: %" PRIu32 " * %" PRIu32 " ...\n", rw_size, rw_count);
+
+	for (i = 0; i < rw_count; ++i) {
+		r = ext4_fread(&f, rw_buff, rw_size, &size);
+
+		if ((r != EOK) || (size != rw_size))
+			break;
+
+		if (verify_buf(rw_buff, rw_size, i % 10 + '0'))
+			break;
+	}
+
+	if (i != rw_count) {
+		printf("  file_test: rw_count = %" PRIu32 "\n", i);
+		return false;
+	}
+
+	stop = get_ms();
+	diff = stop - start;
+	size_bytes = rw_size * rw_count;
+	size_bytes = (size_bytes * 1000) / 1024;
+	kbps = (size_bytes) / (diff + 1);
+	printf("  read time: %d ms\n", (int)diff);
+	printf("  read speed: %d KB/s\n", (int)kbps);
+	printf_io_timings(diff);
+
+	r = ext4_fclose(&f);
+	return true;
+}
+
+void test_lwext4_cleanup(void) {
 	uint32_t start;
 	uint32_t stop;
 	uint32_t diff;
@@ -169,7 +339,7 @@ void test_lwext4_cleanup(void)
 	}
 
 	Serial.printf("remove /mp/dir1\n");
-//	io_timings_clear();
+	io_timings_clear();
 	start = millis();
 	r = ext4_dir_rm("/mp/dir1");
 	if (r != EOK && r != ENOENT) {
@@ -178,11 +348,9 @@ void test_lwext4_cleanup(void)
 	stop = millis();
 	diff = stop - start;
 	Serial.printf("cleanup: time: %d ms\n", (uint32_t)diff);
-//	printf_io_timings(diff);
 }
 
-void test_lwext4_mp_stats(void)
-{
+void test_lwext4_mp_stats(void) {
 	struct ext4_mount_stats stats;
 	ext4_mount_point_stats("/mp/", &stats);
 
@@ -201,9 +369,8 @@ void test_lwext4_mp_stats(void)
 	Serial.printf("********************\n");
 }
 
-void test_lwext4_dir_ls(const char *path)
-{
-	char sss[255];
+void test_lwext4_dir_ls(const char *path) {
+	char sss[256];
 	ext4_dir d;
 	const ext4_direntry *de;
 
@@ -214,21 +381,36 @@ void test_lwext4_dir_ls(const char *path)
 	  Serial.printf("ext4_dir_open(): Failed %d\n",r);
 	else
 	  Serial.printf("ext4_dir_open(): Passed\n");
-	
-	de = ext4_dir_entry_next(&d);
 
+	de = ext4_dir_entry_next(&d);
 	while (de) {
 		memcpy(sss, de->name, de->name_length);
 		sss[de->name_length] = 0;
 		Serial.printf("  %s\n", sss);
-//		Serial.printf("  %s%s\n", entry_to_str(de->inode_type), sss);
+		Serial.printf("  %s%s\n", entry_to_str(de->inode_type), sss);
 		de = ext4_dir_entry_next(&d);
 	}
 	ext4_dir_close(&d);
 }
 
-bool test_lwext4_dir_test(int len)
-{
+void test_lwext4_block_stats(void) {
+	if (!bd)
+		return;
+
+	printf("********************\n");
+	printf("ext4 blockdev stats\n");
+	printf("bdev->bread_ctr = %" PRIu32 "\n", bd->bdif->bread_ctr);
+	printf("bdev->bwrite_ctr = %" PRIu32 "\n", bd->bdif->bwrite_ctr);
+
+	printf("bcache->ref_blocks = %" PRIu32 "\n", bd->bc->ref_blocks);
+	printf("bcache->max_ref_blocks = %" PRIu32 "\n", bd->bc->max_ref_blocks);
+	printf("bcache->lru_ctr = %" PRIu32 "\n", bd->bc->lru_ctr);
+
+	printf("\n");
+	printf("********************\n");
+}
+
+bool test_lwext4_dir_test(int len) {
 	ext4_file f;
 	int r;
 	int i;
@@ -239,15 +421,15 @@ bool test_lwext4_dir_test(int len)
 
 	Serial.printf("test_lwext4_dir_test: %d\n", len);
 	start = millis();
-/*
-	Serial.printf("directory create: /mp/dir1\n");
-	r = ext4_dir_mk("/mp/dir1");
+
+	Serial.printf("directory create: /mp/dir1/\n");
+	r = ext4_dir_mk("/mp/dir1/");
 	if (r != EOK) {
 		Serial.printf("ext4_dir_mk: rc = %d\n", r);
 		return false;
 	}
-/*
-	Serial.printf("add files to: /mp/dir1\n");
+
+	Serial.printf("add files to: /mp/dir1/\n");
 	for (i = 0; i < len; ++i) {
 		sprintf(path, "/mp/dir1/f%d", i);
 		r = ext4_fopen(&f, path, "wb");
@@ -256,7 +438,6 @@ bool test_lwext4_dir_test(int len)
 			return false;
 		}
 	}
-*/
 	stop = millis();
 	diff = stop - start;
 	test_lwext4_dir_ls("/mp/");
@@ -265,23 +446,27 @@ bool test_lwext4_dir_test(int len)
 	return true;
 }
 
-void setup()
-{
-  // Open serial communications and wait for port to open:
-  Serial.begin(9600);
+void setup() {
+// Open serial communications and wait for port to open:
+//   Serial.begin(9600);
    while (!Serial) {
     yield(); // wait for serial port to connect.
   }
-  Serial.printf("Teensy EXT4 file system testing\n\n");
+  if(CrashReport)
+	Serial.print(CrashReport);
 
-  mscHostInit();  // Initialize USBHost
+  Serial.printf("%cTeensy EXT4 file system testing\n\n",12);
 
-  parent_blockdev = ext4_blockdev_get();
+  myusb.begin();
+
+  parent_blockdev = ext4_usb_bd_get();
   if (!parent_blockdev) {
-	Serial.printf("open_filedev: failed\n");
+	Serial.printf("open_blockdev: failed\n");
   } else {
-	Serial.printf("open_filedev: Passed\n");
+	Serial.printf("open_blockdev: Passed\n");
   }
+  if (verbose)
+	ext4_dmask_set(DEBUG_ALL);
 
   if (!mbr_scan())
 	Serial.printf("mbr_scan() Failed\n");
@@ -293,15 +478,41 @@ void setup()
   else
 	Serial.printf("test_lwext4_mount() Passed\n\n");
 
-  test_lwext4_mp_stats();	
-
   test_lwext4_cleanup();
 
-//  if (!test_lwext4_dir_test(dir_cnt))
-//	Serial.printf("test_lwext4_dir_test(dir_cnt): Failed\n");
-//  else
-//	Serial.printf("test_lwext4_dir_test(dir_cnt): Passed\n");
+  if (sbstat)
+    test_lwext4_mp_stats();
 
+  test_lwext4_dir_ls("/mp/");
+
+  test_lwext4_dir_test(dir_cnt);
+  
+  uint8_t *rw_buff = (uint8_t *)malloc(rw_szie);
+  if (!rw_buff) {
+    free(rw_buff);
+	return EXIT_FAILURE;
+  }
+  if (!test_lwext4_file_test(rw_buff, rw_szie, rw_count)) {
+	free(rw_buff);
+	return EXIT_FAILURE;
+  }
+  free(rw_buff);
+
+  test_lwext4_dir_ls("/mp/");
+  
+  if (sbstat)
+    test_lwext4_mp_stats();	
+
+  if (cleanup_flag)
+	test_lwext4_cleanup();
+
+  if (sbstat)
+    test_lwext4_mp_stats();	
+
+  if (bstat)
+    test_lwext4_block_stats();
+
+  test_lwext4_umount();
 
   Serial.printf("Done...\n");
 }
