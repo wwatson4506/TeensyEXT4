@@ -64,7 +64,7 @@ int ext4_fs_init(struct ext4_fs *fs, struct ext4_blockdev *bdev,
 	int r, i;
 	uint16_t tmp;
 	uint32_t bsize;
-//	ext4_assert(fs && bdev);
+	ext4_assert(fs && bdev);
 
 	fs->bdev = bdev;
 
@@ -123,7 +123,7 @@ int ext4_fs_init(struct ext4_fs *fs, struct ext4_blockdev *bdev,
 
 int ext4_fs_fini(struct ext4_fs *fs)
 {
-//	ext4_assert(fs);
+	ext4_assert(fs);
 
 	/*Set superblock state*/
 	ext4_set16(&fs->sb, state, EXT4_SUPERBLOCK_STATE_VALID_FS);
@@ -207,7 +207,7 @@ static void ext4_fs_debug_features_ro(uint32_t features_ro)
 
 int ext4_fs_check_features(struct ext4_fs *fs, bool *read_only)
 {
-//	ext4_assert(fs && read_only);
+	ext4_assert(fs && read_only);
 	uint32_t v;
 	if (ext4_get32(&fs->sb, rev_level) == 0) {
 		*read_only = false;
@@ -1082,9 +1082,9 @@ static int ext4_fs_release_inode_block(struct ext4_inode_ref *inode_ref,
 
 	/* Extents are handled otherwise = there is not support in this function
 	 */
-//	ext4_assert(!(
-//	    ext4_sb_feature_incom(&fs->sb, EXT4_FINCOM_EXTENTS) &&
-//	    (ext4_inode_has_flag(inode_ref->inode, EXT4_INODE_FLAG_EXTENTS))));
+	ext4_assert(!(
+	    ext4_sb_feature_incom(&fs->sb, EXT4_FINCOM_EXTENTS) &&
+	    (ext4_inode_has_flag(inode_ref->inode, EXT4_INODE_FLAG_EXTENTS))));
 
 	struct ext4_inode *inode = inode_ref->inode;
 
@@ -1371,7 +1371,7 @@ static int ext4_fs_get_inode_dblk_idx_internal(struct ext4_inode_ref *inode_ref,
 		current_block = current_fsblk;
 		*fblock = current_block;
 
-//		ext4_assert(*fblock || support_unwritten);
+		ext4_assert(*fblock || support_unwritten);
 		return EOK;
 	}
 #endif
@@ -1657,7 +1657,7 @@ int ext4_fs_append_inode_dblk(struct ext4_inode_ref *inode_ref,
 			return rc;
 
 		*fblock = current_fsblk;
-//		ext4_assert(*fblock);
+		ext4_assert(*fblock);
 
 		ext4_inode_set_size(inode_ref->inode, inode_size + block_size);
 		inode_ref->dirty = true;

@@ -145,7 +145,7 @@ uint32_t ext4_dmask_get(void);
 #include <stdio.h>
 
 /**@brief   Debug printf.*/
-#define ext4_dbg(m, ...)                                                       \
+#define ext4_dbg(m, ...) {;}                                                      \
 	do {                                                                   \
 		if ((m) & ext4_dmask_get()) {                                  \
 			if (!((m) & DEBUG_NOPREFIX)) {                         \
@@ -156,6 +156,7 @@ uint32_t ext4_dmask_get(void);
 			fflush(stdout);                                        \
 		}                                                              \
 	} while (0)
+
 #else
 #define ext4_dbg(m, ...) do { } while (0)
 #endif
@@ -165,7 +166,7 @@ uint32_t ext4_dmask_get(void);
 #if CONFIG_HAVE_OWN_ASSERT
 #include <stdio.h>
 
-#define ext4_assert(_v)                                                        \
+#define ext4_assert(_v) {;}                                                       \
 	do {                                                                   \
 		if (!(_v)) {                                                   \
 			printf("assertion failed:\nfile: %s\nline: %d\n",      \
@@ -174,6 +175,7 @@ uint32_t ext4_dmask_get(void);
 				       ;				       \
 		}                                                              \
 	} while (0)
+
 #else
 #define ext4_assert(_v) assert(_v)
 #endif

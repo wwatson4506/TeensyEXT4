@@ -239,8 +239,8 @@ const char *ext4_extract_xattr_name(const char *full_name, size_t full_name_len,
 				    bool *found)
 {
 	int i;
-//	ext4_assert(name_index);
-//	ext4_assert(found);
+	ext4_assert(name_index);
+	ext4_assert(found);
 
 	*found = false;
 
@@ -1249,7 +1249,7 @@ int ext4_xattr_remove(struct ext4_inode_ref *inode_ref, uint8_t name_index,
 			struct ext4_xattr_header *header =
 			    EXT4_XATTR_BHDR(&new_block);
 			header = EXT4_XATTR_BHDR(&new_block);
-//			ext4_assert(block_finder.s.first);
+			ext4_assert(block_finder.s.first);
 			ext4_xattr_rehash(header, block_finder.s.first);
 			ext4_xattr_set_block_checksum(inode_ref,
 						      block.lb_id,
@@ -1291,7 +1291,7 @@ static int ext4_xattr_block_set(struct ext4_inode_ref *inode_ref,
 
 	orig_xattr_block = ext4_inode_get_file_acl(inode_ref->inode, &fs->sb);
 
-//	ext4_assert(i->value);
+	ext4_assert(i->value);
 	if (!orig_xattr_block) {
 		struct ext4_xattr_search s;
 		struct ext4_xattr_header *header;
@@ -1321,8 +1321,8 @@ static int ext4_xattr_block_set(struct ext4_inode_ref *inode_ref,
 		if (ret == EOK) {
 			header = EXT4_XATTR_BHDR(&block);
 
-//			ext4_assert(s.here);
-//			ext4_assert(s.first);
+			ext4_assert(s.here);
+			ext4_assert(s.first);
 			ext4_xattr_compute_hash(header, s.here);
 			ext4_xattr_rehash(header, s.first);
 			ext4_xattr_set_block_checksum(inode_ref,
@@ -1391,8 +1391,8 @@ static int ext4_xattr_block_set(struct ext4_inode_ref *inode_ref,
 		if (ret == EOK) {
 			header = EXT4_XATTR_BHDR(&block);
 
-//			ext4_assert(finder.s.here);
-//			ext4_assert(finder.s.first);
+			ext4_assert(finder.s.here);
+			ext4_assert(finder.s.first);
 			ext4_xattr_compute_hash(header, finder.s.here);
 			ext4_xattr_rehash(header, finder.s.first);
 			ext4_xattr_set_block_checksum(inode_ref,
@@ -1427,7 +1427,7 @@ static int ext4_xattr_block_remove(struct ext4_inode_ref *inode_ref,
 	ext4_fsblk_t orig_xattr_block;
 	orig_xattr_block = ext4_inode_get_file_acl(inode_ref->inode, &fs->sb);
 
-//	ext4_assert(orig_xattr_block);
+	ext4_assert(orig_xattr_block);
 	ret = ext4_trans_block_get(fs->bdev, &block, orig_xattr_block);
 	if (ret != EOK)
 		goto out;
@@ -1456,7 +1456,7 @@ static int ext4_xattr_block_remove(struct ext4_inode_ref *inode_ref,
 		i->value = value;
 
 		header = EXT4_XATTR_BHDR(&block);
-//		ext4_assert(finder.s.first);
+		ext4_assert(finder.s.first);
 		ext4_xattr_rehash(header, finder.s.first);
 		ext4_xattr_set_block_checksum(inode_ref,
 					      block.lb_id,

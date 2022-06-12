@@ -967,7 +967,7 @@ static void jbd_add_revoke_block_tags(struct recover_info *info,
 	}
 
 	revoke_entry = jbd_alloc_revoke_entry();
-//	ext4_assert(revoke_entry);
+	ext4_assert(revoke_entry);
 	revoke_entry->block = block;
 	revoke_entry->trans_id = info->this_trans_id;
 	RB_INSERT(jbd_revoke, &info->revoke_root, revoke_entry);
@@ -980,7 +980,7 @@ static void jbd_destroy_revoke_tree(struct recover_info *info)
 	while (!RB_EMPTY(&info->revoke_root)) {
 		struct revoke_entry *revoke_entry =
 			RB_MIN(jbd_revoke, &info->revoke_root);
-//		ext4_assert(revoke_entry);
+		ext4_assert(revoke_entry);
 		RB_REMOVE(jbd_revoke, &info->revoke_root, revoke_entry);
 		jbd_free_revoke_entry(revoke_entry);
 	}
@@ -1318,7 +1318,7 @@ static void jbd_journal_flush_trans(struct jbd_trans *trans)
 	struct jbd_journal *journal = trans->journal;
 	struct ext4_fs *fs = journal->jbd_fs->inode_ref.fs;
 	void *tmp_data = ext4_malloc(journal->block_size);
-//	ext4_assert(tmp_data);
+	ext4_assert(tmp_data);
 
 	TAILQ_FOREACH_SAFE(jbd_buf, &trans->buf_queue, buf_node,
 			tmp) {
@@ -1334,7 +1334,7 @@ static void jbd_journal_flush_trans(struct jbd_trans *trans)
 			r = jbd_block_get(journal->jbd_fs,
 						&jbd_block,
 						jbd_buf->jbd_lba);
-//			ext4_assert(r == EOK);
+			ext4_assert(r == EOK);
 			memcpy(tmp_data, jbd_block.data,
 					journal->block_size);
 			ext4_block_set(fs->bdev, &jbd_block);
@@ -1465,7 +1465,7 @@ static uint32_t jbd_journal_alloc_block(struct jbd_journal *journal,
 	 * transaction.*/
 	if (journal->last == journal->start) {
 		jbd_journal_purge_cp_trans(journal, true, true);
-//		ext4_assert(journal->last != journal->start);
+		ext4_assert(journal->last != journal->start);
 	}
 
 	return start_block;
@@ -1559,11 +1559,11 @@ jbd_trans_finish_callback(struct jbd_journal *journal,
 				r = ext4_block_get_noread(fs->bdev,
 							&block,
 							block_rec->lba);
-//				ext4_assert(r == EOK);
+				ext4_assert(r == EOK);
 				r = jbd_block_get(journal->jbd_fs,
 							&jbd_block,
 							jbd_buf->jbd_lba);
-//				ext4_assert(r == EOK);
+				ext4_assert(r == EOK);
 				memcpy(block.data, jbd_block.data,
 						journal->block_size);
 

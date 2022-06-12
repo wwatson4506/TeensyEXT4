@@ -105,12 +105,12 @@ extern "C" {
 
 /**@brief   Debug printf enable (stdout)*/
 #ifndef CONFIG_DEBUG_PRINTF
-#define CONFIG_DEBUG_PRINTF 0 // Will cause the TEENSY to hang when enabled.
+#define CONFIG_DEBUG_PRINTF 1
 #endif
 
 /**@brief   Assert printf enable (stdout)*/
 #ifndef CONFIG_DEBUG_ASSERT
-#define CONFIG_DEBUG_ASSERT 0 // Will cause erratic behaviour when enabled.
+#define CONFIG_DEBUG_ASSERT 1
 #endif
 
 /**@brief   Include assert codes from ext4_debug or standard library.*/
@@ -137,7 +137,7 @@ extern "C" {
 
 /**@brief   Maximum block device count*/
 #ifndef CONFIG_EXT4_BLOCKDEVS_COUNT
-#define CONFIG_EXT4_BLOCKDEVS_COUNT 1
+#define CONFIG_EXT4_BLOCKDEVS_COUNT 4
 #endif
 
 /**@brief   Maximum mountpoint name*/

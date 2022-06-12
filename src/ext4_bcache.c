@@ -70,7 +70,7 @@ RB_GENERATE_INTERNAL(ext4_buf_lru, ext4_buf, lru_node,
 int ext4_bcache_init_dynamic(struct ext4_bcache *bc, uint32_t cnt,
 			     uint32_t itemsize)
 {
-//	ext4_assert(bc && cnt && itemsize);
+	ext4_assert(bc && cnt && itemsize);
 
 	memset(bc, 0, sizeof(struct ext4_bcache));
 
@@ -271,16 +271,16 @@ int ext4_bcache_free(struct ext4_bcache *bc, struct ext4_block *b)
 {
 	struct ext4_buf *buf = b->buf;
 
-//	ext4_assert(bc && b);
+	ext4_assert(bc && b);
 
 	/*Check if valid.*/
-//	ext4_assert(b->lb_id);
+	ext4_assert(b->lb_id);
 
 	/*Block should have a valid pointer to ext4_buf.*/
-//	ext4_assert(buf);
+	ext4_assert(buf);
 
 	/*Check if someone don't try free unreferenced block cache.*/
-//	ext4_assert(buf->refctr);
+	ext4_assert(buf->refctr);
 
 	/*Just decrease reference counter*/
 	ext4_bcache_dec_ref(buf);

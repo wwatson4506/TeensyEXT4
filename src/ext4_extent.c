@@ -980,7 +980,7 @@ static int ext4_ext_insert_index(struct ext4_inode_ref *inode_ref,
 		return EIO;
 
 	len = EXT_LAST_INDEX(eh) - ix + 1;
-//	ext4_assert(len >= 0);
+	ext4_assert(len >= 0);
 	if (len > 0)
 		memmove(ix + 1, ix, len * sizeof(struct ext4_extent_index));
 
@@ -1015,7 +1015,7 @@ static int ext4_ext_split_node(struct ext4_inode_ref *inode_ref,
 	int depth = ext_depth(inode_ref->inode);
 	npath_at = depth - at;
 
-//	ext4_assert(at > 0);
+	ext4_assert(at > 0);
 
 	if (path[depth].extent != EXT_MAX_EXTENT(path[depth].header))
 		insert_index = path[depth].extent[1].first_block;
@@ -1312,7 +1312,7 @@ static int ext4_ext_insert_leaf(struct ext4_inode_ref *inode_ref,
 	}
 
 	len = EXT_LAST_EXTENT(eh) - ex + 1;
-//	ext4_assert(len >= 0);
+	ext4_assert(len >= 0);
 	if (len > 0)
 		memmove(ex + 1, ex, len * sizeof(struct ext4_extent));
 
@@ -1760,7 +1760,7 @@ int ext4_extent_remove_space(struct ext4_inode_ref *inode_ref, ext4_lblk_t from,
 			struct ext4_extent *first_ex, *last_ex;
 			ext4_lblk_t leaf_from, leaf_to;
 			eh = path[i].header;
-//			ext4_assert(to_le16(eh->entries_count) > 0);
+			ext4_assert(to_le16(eh->entries_count) > 0);
 			first_ex = EXT_FIRST_EXTENT(eh);
 			last_ex = EXT_LAST_EXTENT(eh);
 			leaf_from = to_le32(first_ex->first_block);
@@ -1907,7 +1907,7 @@ static int ext4_ext_convert_to_initialized(struct ext4_inode_ref *inode_ref,
 	int32_t depth = ext_depth(inode_ref->inode), err = EOK;
 	struct ext4_extent *ex = (*ppath)[depth].extent;
 
-//	ext4_assert(to_le32(ex->first_block) <= split);
+	ext4_assert(to_le32(ex->first_block) <= split);
 
 	if (split + blocks ==
 	    to_le32(ex->first_block) + ext4_ext_get_actual_len(ex)) {

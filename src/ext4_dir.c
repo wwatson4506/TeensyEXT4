@@ -174,16 +174,15 @@ static int ext4_dir_iterator_set(struct ext4_dir_iter *it,
 
 	struct ext4_dir_en *en;
 	en = (void *)(it->curr_blk.data + off_in_block);
-
 	/* Ensure that the whole entry does not overflow the block */
 	uint16_t length = ext4_dir_en_get_entry_len(en);
 	if (off_in_block + length > block_size)
 		return EIO;
 
 	/* Ensure the name length is not too large */
-	if (ext4_dir_en_get_name_len(sb, en) > length - 8)
+	if (ext4_dir_en_get_name_len(sb, en) > length - 8) {
 		return EIO;
-
+}
 	/* Everything OK - "publish" the entry */
 	it->curr = en;
 	return EOK;
@@ -209,7 +208,6 @@ static int ext4_dir_iterator_seek(struct ext4_dir_iter *it, uint64_t pos)
 	/* Are we at the end? */
 	if (pos >= size) {
 		if (it->curr_blk.lb_id) {
-
 			r = ext4_block_set(bdev, &it->curr_blk);
 			it->curr_blk.lb_id = 0;
 			if (r != EOK)
@@ -263,7 +261,6 @@ int ext4_dir_iterator_init(struct ext4_dir_iter *it,
 	it->curr = 0;
 	it->curr_off = 0;
 	it->curr_blk.lb_id = 0;
-
 	return ext4_dir_iterator_seek(it, pos);
 }
 
@@ -301,7 +298,7 @@ void ext4_dir_write_entry(struct ext4_sblock *sb, struct ext4_dir_en *en,
 			  const char *name, size_t name_len)
 {
 	/* Check maximum entry length */
-//	ext4_assert(entry_len <= ext4_sb_get_block_size(sb));
+	ext4_assert(entry_len <= ext4_sb_get_block_size(sb));
 
 	/* Set type of entry */
 	switch (ext4_inode_type(sb, child->inode)) {
@@ -486,6 +483,7 @@ int ext4_dir_find_entry(struct ext4_dir_search_result *result,
 	/* Walk through all data blocks */
 	for (iblock = 0; iblock < total_blocks; ++iblock) {
 		/* Load block address */
+
 		r = ext4_fs_get_inode_dblk_idx(parent, iblock, &fblock, false);
 		if (r != EOK)
 			return r;
@@ -562,7 +560,7 @@ int ext4_dir_remove_entry(struct ext4_inode_ref *parent, const char *name,
 			de_len = ext4_dir_en_get_entry_len(tmp_de);
 		}
 
-//		ext4_assert(de_len + offset == pos);
+		ext4_assert(de_len + offset == pos);
 
 		/* Add to removed entry length to predecessor's length */
 		uint16_t del_len;

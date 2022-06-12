@@ -113,7 +113,7 @@ static struct ext4_block_devices s_bdevices[CONFIG_EXT4_BLOCKDEVS_COUNT];
 static struct ext4_mountpoint s_mp[CONFIG_EXT4_MOUNTPOINTS_COUNT];
 
 int ext4_device_register(struct ext4_blockdev *bd, const char *dev_name) {
-//	ext4_assert(bd && dev_name);
+	ext4_assert(bd && dev_name);
 
 	if (strlen(dev_name) > CONFIG_EXT4_MAX_BLOCKDEV_NAME)
 		return EINVAL;
@@ -366,7 +366,7 @@ int ext4_mount(const char *dev_name, const char *mount_point,
 	struct ext4_blockdev *bd = 0;
 	struct ext4_mountpoint *mp = 0;
 
-//	ext4_assert(mount_point && dev_name);
+	ext4_assert(mount_point && dev_name);
 
 	size_t mp_len = strlen(mount_point);
 
@@ -375,7 +375,6 @@ int ext4_mount(const char *dev_name, const char *mount_point,
 
 	if (mount_point[mp_len - 1] != '/')
 		return ENOTSUP;
-
 	for (size_t i = 0; i < CONFIG_EXT4_BLOCKDEVS_COUNT; ++i) {
 		if (!strcmp(dev_name, s_bdevices[i].name)) {
 			bd = s_bdevices[i].bd;
@@ -962,6 +961,7 @@ static int ext4_generic_open2(ext4_file *f, const char *path, int flags,
 		*parent_inode = ref.index;
 
 	len = ext4_path_check(path, &is_goal);
+
 	while (1) {
 
 		len = ext4_path_check(path, &is_goal);
@@ -974,7 +974,6 @@ static int ext4_generic_open2(ext4_file *f, const char *path, int flags,
 			r = ENOENT;
 			break;
 		}
-
 		r = ext4_dir_find_entry(&result, &ref, path, len);
 		if (r != EOK) {
 
@@ -3152,13 +3151,11 @@ Finish:
 	EXT4_MP_UNLOCK(mp);
 	return r;
 }
-//#include "ext4MscHost.h"
+
 int ext4_dir_open(ext4_dir *dir, const char *path)
 {
-//switchRedLed(true);
 	struct ext4_mountpoint *mp = ext4_get_mount(path);
 	int r;
-//switchRedLed(false);
 	if (!mp)
 		return ENOENT;
 
@@ -3177,7 +3174,6 @@ int ext4_dir_close(ext4_dir *dir)
 const ext4_direntry *ext4_dir_entry_next(ext4_dir *dir)
 {
 #define EXT4_DIR_ENTRY_OFFSET_TERM (uint64_t)(-1)
-
 	int r;
 	uint16_t name_length;
 	ext4_direntry *de = 0;
@@ -3215,7 +3211,6 @@ const ext4_direntry *ext4_dir_entry_next(ext4_dir *dir)
 						      it.curr);
 
 	de = &dir->de;
-
 	ext4_dir_iterator_next(&it);
 
 	dir->next_off = it.curr ? it.curr_off : EXT4_DIR_ENTRY_OFFSET_TERM;
