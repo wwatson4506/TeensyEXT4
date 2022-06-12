@@ -1,4 +1,5 @@
 # TeensyEXT4
+
 This is a working version of lwext4 adapted for use with the Teensy T3.6/T4.x. 
 
 This is the start of being able to use lwext4 with the T36/T40/T41 and so far MSC USB drives. It has only been tested with Arduino 1.8.19 and Teenyduino 1.57B2. It will mount an ext4 formatted USB drive through USBHost_t36 which is included in TD1.57B2.
@@ -6,6 +7,17 @@ This is the start of being able to use lwext4 with the T36/T40/T41 and so far MS
 You will need Arduino 1.8.19 and:
 
 https://forum.pjrc.com/threads/70409-Teensyduino-1-57-Beta-2
+
+***************************************
+* UPDATE: Added support for SD cards. *
+***************************************
+In setup() you will find these lines. only one can be uncommented at a time.
+
+  parent_blockdev = ext4_usb_bd_get();
+//  Uncomment the line below and comment line above 
+//  to test SDIO card.  
+//  parent_blockdev = ext4_sd_bd_get();
+
 
 You will need a USB drive formatted as ext4 with a volume label to identify the drive. Then you will need to mount it in Linux and use a filemanager to create a folder named 'mp'. This is the mount point (device file) for TeensyEXT4 access to the USB device. Compile the the TeensyEXT4test.ino example and upload to the Teensy. It should then mount the USB drive and give info on the MBR and the testing results.
 
