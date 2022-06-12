@@ -460,6 +460,10 @@ void setup() {
   myusb.begin();
 
   parent_blockdev = ext4_usb_bd_get();
+//  Uncomment the line below and comment line above 
+//  to test SDIO card.  
+//  parent_blockdev = ext4_sd_bd_get();
+  
   if (!parent_blockdev) {
 	Serial.printf("open_blockdev: failed\n");
   } else {
