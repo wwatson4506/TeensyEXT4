@@ -24,9 +24,6 @@
 #define __EXT4FS_H__
 
 #include <Arduino.h>
-//#include "lwext4BDIF.h"
-//#include <stdint.h>
-//#include <stdbool.h>
 #include "USBHost_t36.h"
 #include "SdFat.h"
 #include "ext4/ext4_mbr.h"
