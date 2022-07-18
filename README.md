@@ -23,7 +23,7 @@ https://github.com/gkostka/stm32f429disco-lwext4 An example using USB drive as a
 https://github.com/autoas/as/tree/master/com/as.infrastructure/system/fs  
 
 Example Sketches:
-- ext4Usage.ino This sketch contains information on the general usage of TeensyEXT4 and is similar to LittlFS_Usage and SdFat_Usage.
+- ext4Usage.ino This sketch contains information on the general usage of TeensyEXT4 and is similar to LittleFS_Usage and SdFat_Usage.
 - ext4DeviceInfo.ino Gives various stats about a mounted block device and it's partitions.
 - ListFiles.ino Gives a directory listing.
 - Files.ino Tests file existance.
