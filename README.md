@@ -8,9 +8,7 @@ You will need Arduino 1.8.19 and:
 
 https://forum.pjrc.com/threads/70455-Teensyduino-1-57-Beta-3
 
-*******************************************
-* UPDATE: FS abstraction layer supported. *
-*******************************************
+* UPDATE: FS abstraction layer supported. 
 
 You will need a USB drive or SD card formatted as ext4 with a volume label to identify the drive. Compile any of the TeensyEXT4 examples and upload to the Teensy.
 
