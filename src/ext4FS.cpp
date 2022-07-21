@@ -45,11 +45,13 @@ SdCard *sd;
 /**@brief   Block size.*/
 #define BLOCK_SIZE 512
 
-
-/**@brief   Partition block offset*/
-static uint32_t part_offset;
-
+//******************************************************************************
+// An array of parent block devices.
+//******************************************************************************
 static block_device_t bd_list[CONFIG_EXT4_BLOCKDEVS_COUNT];
+//******************************************************************************
+// An array of mounted partitions.
+//******************************************************************************
 static bd_mounts_t mount_list[MAX_MOUNT_POINTS];
 
 //**********************BLOCKDEV INTERFACE**************************************
@@ -62,6 +64,8 @@ static int ext4_bd_close(struct ext4_blockdev *bdev);
 static int ext4_bd_lock(struct ext4_blockdev *bdev);
 static int ext4_bd_unlock(struct ext4_blockdev *bdev);
 
+//******************************************************************************
+// The list of low level parent block device instances.
 //******************************************************************************
 EXT4_BLOCKDEV_STATIC_INSTANCE(_ext4_bd,  BLOCK_SIZE, 0, ext4_bd_open,
 			      ext4_bd_bread, ext4_bd_bwrite, ext4_bd_close,
@@ -82,7 +86,9 @@ EXT4_BLOCKDEV_STATIC_INSTANCE(_ext4_bd3,  BLOCK_SIZE, 0, ext4_bd_open,
 			      0, 0);
 #endif
 
-// List of interfaces
+//******************************************************************************
+// List of block device interfaces.
+//******************************************************************************
 static struct ext4_blockdev * const ext4_blkdev_list[CONFIG_EXT4_BLOCKDEVS_COUNT] =
 {
 	&_ext4_bd,
@@ -169,11 +175,11 @@ static int ext4_bd_bread(struct ext4_blockdev *bdev, void *buf, uint64_t blk_id,
 		index = get_device_index(bdev);
 
 	if(index <= 2) {
-		status = bd_list[index].pDrive->msReadBlocks(blk_id + part_offset,
+		status = bd_list[index].pDrive->msReadBlocks(blk_id,
 								(uint32_t)blk_cnt, bdev->bdif->ph_bsize, buf);
 		if (status != 0) return EIO;
 	} else {
-		status = bd_list[index].pSD->readSectors(blk_id + part_offset,
+		status = bd_list[index].pSD->readSectors(blk_id,
 								(uint8_t *)buf, blk_cnt);
 		if (status == false)
 			return EIO;
@@ -196,11 +202,11 @@ static int ext4_bd_bwrite(struct ext4_blockdev *bdev, const void *buf,
 		index = get_device_index(bdev);
 
 	if(index <= 2) {
-		status = bd_list[index].pDrive->msWriteBlocks(blk_id + part_offset,
+		status = bd_list[index].pDrive->msWriteBlocks(blk_id,
 								(uint32_t)blk_cnt, bdev->bdif->ph_bsize, buf);
 	if (status != 0) return EIO;
 	} else {
-		status = bd_list[index].pSD->writeSectors(blk_id + part_offset,
+		status = bd_list[index].pSD->writeSectors(blk_id,
 								(uint8_t *)buf, blk_cnt);
 		if (status == false)
 			return EIO;
