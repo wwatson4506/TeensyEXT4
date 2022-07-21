@@ -254,7 +254,7 @@ int get_bdev(struct ext4_blockdev * bdev) {
 int get_device_index(struct ext4_blockdev *bdev) {
 	int index;
 	int ret = -1;
-	for (index = 0; index < 16; index++)
+	for (index = 0; index < MAX_MOUNT_POINTS; index++)
 	{
 		if (bdev == (struct ext4_blockdev *)&mount_list[index].partbdev) {
 			if(mount_list[index].parent_bd.connected)
@@ -322,7 +322,7 @@ int LWextFS::init_block_device(uint8_t dev) {
 		for(int i = 0; i < 4; i++) {
 			mount_list[(dev*4)+i].parent_bd = bd_list[dev];
 		}
-		scan_mbr(dev); // Get all partition info.
+		scan_mbr(dev); // Get all partition info for this device.
 	}
 	return EOK;
 }
