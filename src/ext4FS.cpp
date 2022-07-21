@@ -307,7 +307,7 @@ int LWextFS::init_block_device(uint8_t dev) {
 			}
 	} else {
 		sd = cardFactory.newCard(SD_CONFIG);
-		if(sd && !sd->errorCode()) { //Does not work!!
+		if(sd && !sd->errorCode()) {
 			bd_list[dev].pSD = sd;
 			bd_list[dev].dev_id = dev;
 			bd_list[dev].connected = true;
