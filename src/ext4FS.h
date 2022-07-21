@@ -226,13 +226,13 @@ public:
 	}
 	virtual uint64_t position() {
 		if (!file) return 0;
-		int64_t pos = ext4_ftell(file);
+		uint64_t pos = ext4_ftell(file);
 		if (pos < 0) pos = 0;
 		return pos;
 	}
 	virtual uint64_t size() {
 		if (!file) return 0;
-		int64_t size = ext4_fsize(file);
+		uint64_t size = ext4_fsize(file);
 		if (size < 0) size = 0;
 		return size;
 	}
