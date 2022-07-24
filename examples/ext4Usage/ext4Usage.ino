@@ -21,6 +21,7 @@ extern USBHost myusb; // Located and defined in 'ext4FS.cpp'.
 //**********************************************************************
 // Setup four instances of LWextFS (four mountable partittions).
 //**********************************************************************
+LWextFS myext4fs; // Used for initializing all available devices.
 LWextFS myext4fs1;
 LWextFS myext4fs2;
 LWextFS myext4fs3;
@@ -51,6 +52,12 @@ void setup() {
   myusb.begin();
 
 //ext4_dmask_set(DEBUG_ALL);
+
+  Serial.println("Initializing all availble lwext devices.\n");
+  Serial.println("Please Wait...\n");
+  int devcount = myext4fs.lwext_init_devices();  
+  Serial.print(devcount,DEC);
+  Serial.println(" lwext devices found.\n\n");
 
   if(!myext4fs1.begin(sdxx)) { // Change this to sdd1 for SD card.
     Serial.printf("myext4fs.begin(sdxx) Failed: Drive plugged in?\n");
