@@ -385,10 +385,7 @@ int lwext_stat(const char *filename, stat_t *buf) {
 // Initialize a block device. (0 - 15) Mounting device if valid. (this will change)
 //******************************************************************************
 bool LWextFS::begin(uint8_t device) {
-	// Divide device number by 4 to get USB drive number or SD number.
-	// Each device (4 supported) will support 4 partitions. 
-	if(!bd_list[device/4].connected)
-		if(init_block_device(device/4) < 0) return false;	
+	if(!mount_list[device].available) return false;
 	// Device 0-15.
 	// lwext4 only supports 4 partitions at a time.
 	if(lwext_mount(device) > 0) return false;
