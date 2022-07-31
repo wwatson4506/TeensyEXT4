@@ -84,8 +84,9 @@ extern "C" {
 /*****************************************************************************/
 
 /**@brief  Enable/disable journaling*/
+// Fails to mount when enabled and not formatted with journaling support.
 #ifndef CONFIG_JOURNALING_ENABLE
-#define CONFIG_JOURNALING_ENABLE 0 // Fails to mount when enabled.
+#define CONFIG_JOURNALING_ENABLE 0 
 #endif
 
 /**@brief  Enable/disable xattr*/

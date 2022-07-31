@@ -64,8 +64,8 @@ int ext4_fs_init(struct ext4_fs *fs, struct ext4_blockdev *bdev,
 	int r, i;
 	uint16_t tmp;
 	uint32_t bsize;
-	ext4_assert(fs && bdev);
 
+	ext4_assert(fs && bdev);
 	fs->bdev = bdev;
 
 	fs->read_only = read_only;
@@ -795,7 +795,6 @@ int ext4_fs_put_inode_ref(struct ext4_inode_ref *ref)
 		ext4_fs_set_inode_checksum(ref);
 		ext4_trans_set_block_dirty(ref->block.buf);
 	}
-
 	/* Put back block, that contains i-node */
 	return ext4_block_set(ref->fs->bdev, &ref->block);
 }

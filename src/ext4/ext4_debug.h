@@ -141,6 +141,7 @@ void ext4_dmask_clr(uint32_t m);
  * @return  debug mask*/
 uint32_t ext4_dmask_get(void);
 
+void ext4dump(unsigned char *memory, unsigned int len);
 #if CONFIG_DEBUG_PRINTF
 #include <stdio.h>
 

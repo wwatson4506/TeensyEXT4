@@ -59,7 +59,44 @@ uint32_t ext4_dmask_get(void)
 	return debug_mask;
 }
 
+
+
 #if CONFIG_DEBUG_PRINTF
+void ext4dump(unsigned char *memory, unsigned int len)
+{
+   	unsigned int	i=0, j=0;
+	unsigned char	c=0;
+
+//	printf("                     (FLASH) MEMORY CONTENTS");
+	printf("\n\rADDR          00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F");
+	printf("\n\r-------------------------------------------------------------\n\r");
+
+
+	for(i = 0; i <= (len-1); i+=16) {
+//		phex16((i + memory));
+		printf("%8.8x",(unsigned int)(i + memory));
+		printf("      ");
+		for(j = 0; j < 16; j++) {
+			c = memory[i+j];
+			printf("%2.2x",c);
+			printf(" ");
+		}
+		printf("  ");
+		for(j = 0; j < 16; j++) {
+			c = memory[i+j];
+			if(c > 31 && c < 127)
+				putchar(c);
+			else
+				printf(".");
+		}
+//		_delay_ms(10);
+		printf("\n");
+	}
+
+}
+/**
+ * @}
+ */
 //******************************************************************************
 // Temporary usage for printf usage in ext4 driver.
 //******************************************************************************
@@ -78,7 +115,3 @@ int _write(int file, char *ptr, int len) {
 }
 //}
 #endif
-
-/**
- * @}
- */

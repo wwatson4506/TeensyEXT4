@@ -68,6 +68,8 @@ struct fs_aux_info {
 	uint32_t blocks_per_tind;
 };
 
+extern void mkfsPrint(const char *ch);
+
 static inline int log_2(int j)
 {
 	int i;
@@ -262,7 +264,6 @@ static void fill_sb(struct fs_aux_info *aux_info, struct ext4_mkfs_info *info)
 	sb->features_read_only = to_le32(info->feat_ro_compat);
 
 	memcpy(sb->uuid, info->uuid, UUID_SIZE);
-
 	memset(sb->volume_name, 0, sizeof(sb->volume_name));
 	strncpy(sb->volume_name, info->label, sizeof(sb->volume_name));
 	memset(sb->last_mounted, 0, sizeof(sb->last_mounted));
@@ -304,12 +305,16 @@ static int write_bgroup_block(struct ext4_blockdev *bd,
 			      uint32_t blk)
 {
 	int r = EOK;
+	uint32_t cntr = 0;
 	uint32_t j;
 	struct ext4_block b;
 
 	uint32_t block_size = ext4_sb_get_block_size(aux_info->sb);
-
+	mkfsPrint("\nWriting Block Group Blocks\n");
 	for (j = 0; j < aux_info->groups; j++) {
+		cntr++;
+		if(!(cntr % 10)) mkfsPrint("*");
+		if(!(cntr % 640)) mkfsPrint("\n");
 		uint64_t bg_start_block = aux_info->first_data_block +
 					  j * info->blocks_per_group;
 		uint32_t blk_off = 0;
@@ -333,7 +338,6 @@ static int write_bgroup_block(struct ext4_blockdev *bd,
 		if (r != EOK)
 			return r;
 	}
-
 	return r;
 }
 
@@ -345,6 +349,7 @@ static int write_bgroups(struct ext4_blockdev *bd, struct fs_aux_info *aux_info,
 	struct ext4_block b;
 	struct ext4_bgroup *bg_desc;
 
+	uint32_t cntr = 0;
 	uint32_t i;
 	uint32_t bg_free_blk = 0;
 	uint64_t sb_free_blk = 0;
@@ -352,8 +357,11 @@ static int write_bgroups(struct ext4_blockdev *bd, struct fs_aux_info *aux_info,
 	uint32_t dsc_size = ext4_sb_get_desc_size(aux_info->sb);
 	uint32_t dsc_per_block = block_size / dsc_size;
 	uint32_t k = 0;
-
+	mkfsPrint("\nWriting Block Groups\n");
 	for (i = 0; i < aux_info->groups; i++) {
+		cntr++;
+		if(!(cntr % 10)) mkfsPrint("*");
+		if(!(cntr % 640)) mkfsPrint("\n");
 		uint64_t bg_start_block = aux_info->first_data_block +
 			aux_info->first_data_block + i * info->blocks_per_group;
 		uint32_t blk_off = 0;
@@ -418,14 +426,11 @@ static int write_bgroups(struct ext4_blockdev *bd, struct fs_aux_info *aux_info,
 
 		if (++k != dsc_per_block)
 			continue;
-
 		k = 0;
 		r = write_bgroup_block(bd, aux_info, info, i / dsc_per_block);
 		if (r != EOK)
 			return r;
-
 	}
-
 	r = write_bgroup_block(bd, aux_info, info, i / dsc_per_block);
 	if (r != EOK)
 		return r;
@@ -438,11 +443,15 @@ static int write_sblocks(struct ext4_blockdev *bd, struct fs_aux_info *aux_info,
 			  struct ext4_mkfs_info *info)
 {
 	uint64_t offset;
+	uint32_t cntr = 0; 
 	uint32_t i;
 	int r;
-
 	/* write out the backup superblocks */
+	mkfsPrint("\nWriting Super Blocks\n");
 	for (i = 1; i < aux_info->groups; i++) {
+		cntr++;
+		if(!(cntr % 10)) mkfsPrint("*");
+		if(!(cntr % 640)) mkfsPrint("\n");
 		if (has_superblock(info, i)) {
 			offset = info->block_size * (aux_info->first_data_block
 				+ i * info->blocks_per_group);
@@ -492,12 +501,12 @@ static int mkfs_init(struct ext4_blockdev *bd, struct ext4_mkfs_info *info)
 {
 	int r;
 	struct fs_aux_info aux_info;
+
 	memset(&aux_info, 0, sizeof(struct fs_aux_info));
 
 	r = create_fs_aux_info(&aux_info, info);
 	if (r != EOK)
 		goto Finish;
-
 	fill_sb(&aux_info, info);
 
 	r = write_bgroups(bd, &aux_info, info);
@@ -517,9 +526,14 @@ static int init_bgs(struct ext4_fs *fs)
 {
 	int r = EOK;
 	struct ext4_block_group_ref ref;
+	uint32_t cntr = 0;
 	uint32_t i;
 	uint32_t bg_count = ext4_block_group_cnt(&fs->sb);
+	mkfsPrint("\nInitializing Block Groups\n");
 	for (i = 0; i < bg_count; ++i) {
+		cntr++;
+		if(!(cntr % 10)) mkfsPrint("*");
+		if(!(cntr % 640)) mkfsPrint("\n");
 		r = ext4_fs_get_block_group_ref(fs, i, &ref);
 		if (r != EOK)
 			break;
@@ -573,6 +587,8 @@ static int create_dirs(struct ext4_fs *fs)
 	struct ext4_inode_ref root;
 	struct ext4_inode_ref child;
 
+	mkfsPrint("\nCreating Directories\n");
+
 	r = ext4_fs_get_inode_ref(fs, EXT4_ROOT_INO, &root);
 	if (r != EOK)
 		return r;
@@ -603,6 +619,7 @@ static int create_dirs(struct ext4_fs *fs)
 	} else
 #endif
 	{
+		mkfsPrint("Adding ""."" and ""..""\n");
 		r = ext4_dir_add_entry(&root, ".", strlen("."), &root);
 		if (r != EOK)
 			return r;
@@ -620,6 +637,7 @@ static int create_dirs(struct ext4_fs *fs)
 			return r;
 	}
 
+	mkfsPrint("Adding ""lost+found""\n");
 	r = ext4_dir_add_entry(&root, "lost+found", strlen("lost+found"), &child);
 	if (r != EOK)
 		return r;
@@ -639,6 +657,7 @@ static int create_journal_inode(struct ext4_fs *fs,
 {
 	int ret;
 	struct ext4_inode_ref inode_ref;
+
 	uint64_t blocks_count;
 
 	if (!info->journal)
@@ -699,7 +718,7 @@ static int create_journal_inode(struct ext4_fs *fs,
 }
 
 int ext4_mkfs(struct ext4_fs *fs, struct ext4_blockdev *bd,
-	      struct ext4_mkfs_info *info, int fs_type)
+	      struct ext4_mkfs_info *info, int fs_type, const char *label)
 {
 	int r;
 
@@ -730,8 +749,7 @@ int ext4_mkfs(struct ext4_fs *fs, struct ext4_blockdev *bd,
 	if (info->inode_size == 0)
 		info->inode_size = 256;
 
-	if (info->label == NULL)
-		info->label = "";
+	info->label = label;
 
 	info->inodes_per_group = compute_inodes_per_group(info);
 
@@ -818,11 +836,11 @@ int ext4_mkfs(struct ext4_fs *fs, struct ext4_blockdev *bd,
 	r = ext4_block_bind_bcache(bd, &bc);
 	if (r != EOK)
 		goto cache_fini;
-
+    
 	r = ext4_block_cache_write_back(bd, 1);
 	if (r != EOK)
 		goto cache_fini;
-
+	mkfsPrint("Initilalizing...\n");
 	r = mkfs_init(bd, info);
 	if (r != EOK)
 		goto cache_fini;

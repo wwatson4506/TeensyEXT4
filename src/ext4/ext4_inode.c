@@ -98,11 +98,9 @@ void ext4_inode_set_uid(struct ext4_inode *inode, uint32_t uid)
 uint64_t ext4_inode_get_size(struct ext4_sblock *sb, struct ext4_inode *inode)
 {
 	uint64_t v = to_le32(inode->size_lo);
-
 	if ((ext4_get32(sb, rev_level) > 0) &&
 	    (ext4_inode_is_type(sb, inode, EXT4_INODE_MODE_FILE)))
-		v |= ((uint64_t)to_le32(inode->size_hi)) << 32;
-
+		v |= ((uint64_t)(to_le32(inode->size_hi)) << 32);
 	return v;
 }
 

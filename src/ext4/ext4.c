@@ -1585,7 +1585,7 @@ int ext4_fopen2(ext4_file *file, const char *path, int flags)
 
 int ext4_fclose(ext4_file *file)
 {
-//	ext4_assert(file && file->mp);
+	ext4_assert(file && file->mp);
 
 	file->mp = 0;
 	file->flags = 0;

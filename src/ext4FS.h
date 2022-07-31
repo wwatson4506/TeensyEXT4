@@ -24,10 +24,16 @@
 #define __EXT4FS_H__
 
 #include <Arduino.h>
+//#include "lwext4BDIF.h"
+//#include <stdint.h>
+//#include <stdbool.h>
 #include "USBHost_t36.h"
 #include "SdFat.h"
+#include "ext4/ext4_config.h"
 #include "ext4/ext4_mbr.h"
 #include "ext4/ext4.h"
+#include "ext4/ext4_fs.h"
+#include "ext4/ext4_mkfs.h"
 
 // Ext2/3/4 File system type in MBR.
 #define EXT4_TYPE 0x83
@@ -89,6 +95,7 @@ struct bd_mounts {
 	bool available = false;
 	char pname[32];
 	struct ext4_blockdev partbdev;
+    uint8_t pt;
 	block_device_t parent_bd;
 	bool mounted = false;
 };
@@ -110,6 +117,14 @@ void lwext_get_mp(const char *fn, uint8_t id);
 bd_mounts_t *get_mount_list(void);
 void dumpBDList(void);
 void dumpMountList();
+//void mkfsPrint(const char *ch);
+#ifdef __cplusplus
+extern "C" {
+#endif
+void mkfsPrint(const char *ch);
+#ifdef __cplusplus
+}
+#endif
 //******************************************************************************
 
 // Use FILE_READ & FILE_WRITE as defined by FS.h
@@ -226,13 +241,13 @@ public:
 	}
 	virtual uint64_t position() {
 		if (!file) return 0;
-		uint64_t pos = ext4_ftell(file);
+		int64_t pos = ext4_ftell(file);
 		if (pos < 0) pos = 0;
 		return pos;
 	}
 	virtual uint64_t size() {
 		if (!file) return 0;
-		uint64_t size = ext4_fsize(file);
+		int64_t size = ext4_fsize(file);
 		if (size < 0) size = 0;
 		return size;
 	}
@@ -465,6 +480,7 @@ public:
 	int lwext_mount(uint8_t dev);
 	bool lwext_umount(uint8_t dev);
 	int getMountStats(const char * vol, struct ext4_mount_stats *mpInfo);
+	int lwext_mkfs (struct ext4_blockdev *bdev, const char *label = "");
 protected:
 
 private:
