@@ -63,29 +63,29 @@ void setup() {
   for(i = 0; i < MAX_MOUNT_POINTS; i++) {
 	if(ml[i].mounted) {
       Serial.printf("********************\n");
-      Serial.printf("Partition - %s:\n", ml[i].pname);
-      Serial.printf(" offeset: 0x%" PRIx64 ", %" PRIu64 "MB\n",
+      Serial.printf("         Partition: %s\n", ml[i].pname);
+      Serial.printf("           offeset: 0x%" PRIx64 ", %" PRIu64 "MB\n",
                                     ml[i].partbdev.part_offset,
                    ml[i].partbdev.part_offset / (1024 * 1024));
-      Serial.printf(" size:    0x%" PRIx64 ", %" PRIu64 "MB\n",
+      Serial.printf("              size: 0x%" PRIx64 ", %" PRIu64 "MB\n",
                                       ml[i].partbdev.part_size,
                      ml[i].partbdev.part_size / (1024 * 1024));
       Serial.printf("Logical Block Size: %d\n", ml[i].partbdev.lg_bsize);
-      Serial.printf("Block count: %" PRIu64 "\n", ml[i].partbdev.lg_bcnt);
-
+      Serial.printf("       Block count: %" PRIu64 "\n", ml[i].partbdev.lg_bcnt);
+      Serial.printf("           FS type: 0x%x\n", ml[i].pt);
       myext4fsp[i].getMountStats(ml[i].pname, &stats);
-
+      Serial.printf("********************\n");
       Serial.printf("ext4_mount_point_stats\n");
-      Serial.printf("inodes_count = %" PRIu32 "\n", stats.inodes_count);
+      Serial.printf("     inodes_count = %" PRIu32 "\n", stats.inodes_count);
       Serial.printf("free_inodes_count = %" PRIu32 "\n", stats.free_inodes_count);
-      Serial.printf("blocks_count = %" PRIu32 "\n", (uint32_t)stats.blocks_count);
+      Serial.printf("     blocks_count = %" PRIu32 "\n", (uint32_t)stats.blocks_count);
       Serial.printf("free_blocks_count = %" PRIu32 "\n",
 	       (uint32_t)stats.free_blocks_count);
-      Serial.printf("block_size = %" PRIu32 "\n", stats.block_size);
+      Serial.printf("       block_size = %" PRIu32 "\n", stats.block_size);
       Serial.printf("block_group_count = %" PRIu32 "\n", stats.block_group_count);
-      Serial.printf("blocks_per_group= %" PRIu32 "\n", stats.blocks_per_group);
-      Serial.printf("inodes_per_group = %" PRIu32 "\n", stats.inodes_per_group);
-      Serial.printf("volume_name = %s\n", stats.volume_name);
+      Serial.printf(" blocks_per_group = %" PRIu32 "\n", stats.blocks_per_group);
+      Serial.printf(" inodes_per_group = %" PRIu32 "\n", stats.inodes_per_group);
+      Serial.printf("      volume_name = %s\n", stats.volume_name);
       Serial.printf("********************\n\n");
     }  
 

@@ -21,7 +21,7 @@ extern USBHost myusb; // Located and defined in 'ext4FS.cpp'.
 //**********************************************************************
 // Setup four instances of LWextFS (four mountable partittions).
 //**********************************************************************
-LWextFS myext4fs; // Used for initializing all available devices.
+LWextFS myext4fs;
 LWextFS myext4fs1;
 LWextFS myext4fs2;
 LWextFS myext4fs3;
@@ -45,19 +45,15 @@ void setup() {
   }
   if(CrashReport)
 	Serial.print(CrashReport);
+//ext4_dmask_set(DEBUG_ALL);
 
   Serial.printf("%cTeensy lwext file system test\n\n",12);
   Serial.println("Initializing LWextFS ...");
 
   myusb.begin();
 
-//ext4_dmask_set(DEBUG_ALL);
-
-  Serial.println("Initializing all availble lwext devices.\n");
-  Serial.println("Please Wait...\n");
-  int devcount = myext4fs.lwext_init_devices();  
-  Serial.print(devcount,DEC);
-  Serial.println(" lwext devices found.\n\n");
+  Serial.println("Initializing device sdxx.\n");
+  myext4fs.init_block_device(sdxx);  
 
   if(!myext4fs1.begin(sdxx)) { // Change this to sdd1 for SD card.
     Serial.printf("myext4fs.begin(sdxx) Failed: Drive plugged in?\n");
@@ -78,7 +74,7 @@ void setup() {
   file = myext4fs1.open("bigfile.txt", FILE_WRITE_BEGIN);
   file.write(someData, sizeof(someData));
 
-  for (uint16_t j = 0; j < 100; j++)
+  for (uint16_t j = 0; j < 1000; j++)
     file.write(someData, sizeof(someData));
   file.close();
   // We can also get the size of the file just created.  Note we have to open and 
@@ -86,9 +82,6 @@ void setup() {
   file = myext4fs1.open("bigfile.txt", FILE_WRITE);
   Serial.printf("File Size of bigfile.txt (bytes): %u\n", file.size());
   file.close();
-//  Serial.println("unmounting sda1...");
-//  myext4fs1.lwext_umount(sda1);
-//while(1);  
 
   // Now that we initialized the FS and created a file lets print the directory.
   // Note:  Since we are going to be doing print directory and getting disk usuage

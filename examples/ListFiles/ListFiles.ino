@@ -17,7 +17,7 @@ LWextFS myext4fs4;
 #define sdd1 12  // First partition on SD device
 
 // Set this to one of the above devices.
-#define sdxx sda2
+#define sdxx sda1
 
 void setup() {
   
@@ -38,11 +38,8 @@ void setup() {
 
 //ext4_dmask_set(DEBUG_ALL);
 
-  Serial.println("Initializing all availble lwext devices.\n");
-  Serial.println("Please Wait...\n");
-  int devcount = myext4fs.lwext_init_devices();  
-  Serial.print(devcount,DEC);
-  Serial.println(" lwext devices found.\n\n");
+  Serial.println("Initializing device sdxx.\n");
+  myext4fs.init_block_device(sdxx);  
 
   if(!myext4fs1.begin(sdxx)) { // Change this to sdd1 for SD card.
     Serial.printf("myext4fs.begin(sdxx) Failed: Drive plugged in?\n");
