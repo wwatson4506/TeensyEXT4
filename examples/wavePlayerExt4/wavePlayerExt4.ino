@@ -2,7 +2,6 @@
 // Based on lwext4 by: Grzegorz Kostka (kostka.grzegorz@gmail.com)
 // Modified version of LittlFS_Usage.ino for use with LWextFS.
 
-#include <USBHost_t36.h>
 #include <Audio.h>
 #include "play_FS_wav.h" // Should be included in 'Audio.h'
 #include <Wire.h>
