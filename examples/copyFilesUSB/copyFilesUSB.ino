@@ -265,7 +265,7 @@ void loop(void) {
 				Serial.println("\nsdd1 or sda1 is not mounted...");
 				break;
 			}
-			Serial.printf("\n9) Copying from SDIO card to USB drive 1 \n");
+			Serial.printf("\n5) Copying from SDIO card to USB drive 1 \n");
 			if(!(file1 = myext4fs3.open(file2Copy, FILE_READ))) {
 				Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
 				break;
@@ -284,7 +284,7 @@ void loop(void) {
 				Serial.println("\nsdd1 or sdb1 is not mounted...");
 				break;
 			}
-			Serial.printf("\na) Copying from SDIO card to USB drive 2\n");
+			Serial.printf("\n6) Copying from SDIO card to USB drive 2\n");
 			if(!(file1 = myext4fs3.open(file2Copy, FILE_READ))) {
 				Serial.printf("\nERROR: could not open source file: %s\n",file2Copy);
 				break;
