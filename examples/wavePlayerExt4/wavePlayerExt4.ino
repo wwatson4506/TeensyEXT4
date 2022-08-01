@@ -50,9 +50,6 @@ void setup() {
  
   Serial.println("Initializing LWextFS ...");
 
-  Serial.println("Initializing device sdxx.\n");
-  myext4fs.init_block_device(sdxx);  
-
   // Audio connections require memory to work.  For more
   // detailed information, see the MemoryAndCpuUsage example
   AudioMemory(8);
@@ -67,8 +64,11 @@ void setup() {
 
 //ext4_dmask_set(DEBUG_ALL);
 
+  Serial.println("Initializing device sdxx.\n");
+  myext4fs.init_block_device(sdxx);  
+
   if(!myext4fs1.begin(sdxx)) { // Change this to sdd1 for SD card.
-    Serial.printf("myext4fs.begin(sdxx) Failed: Drive plugged in?\n");
+  Serial.printf("myext4fs.begin(sdxx) Failed: Drive plugged in?\n");
 	while(1); // Give up !!!
   } else {
     Serial.printf("myext4fs.begin(sdxx): passed...\n");
