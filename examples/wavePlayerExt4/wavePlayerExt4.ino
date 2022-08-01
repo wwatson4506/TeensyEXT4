@@ -13,6 +13,7 @@
 
 extern USBHost myusb;
 
+LWextFS myext4fs;
 LWextFS myext4fs1;
 LWextFS myext4fs2;
 LWextFS myext4fs3;
@@ -46,10 +47,11 @@ void setup() {
 	Serial.print(CrashReport);
 
   Serial.printf("%cTeensy lwext WavFilePlayer\n\n",12);
-
-  Serial.println("\n" __FILE__ " " __DATE__ " " __TIME__);
-
+ 
   Serial.println("Initializing LWextFS ...");
+
+  Serial.println("Initializing device sdxx.\n");
+  myext4fs.init_block_device(sdxx);  
 
   // Audio connections require memory to work.  For more
   // detailed information, see the MemoryAndCpuUsage example
