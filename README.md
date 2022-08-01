@@ -8,7 +8,14 @@ You will need Arduino 1.8.19 and:
 
 https://forum.pjrc.com/threads/70455-Teensyduino-1-57-Beta-3
 
-* UPDATE: FS abstraction layer supported. 
+or Teensyduino-1.57:
+
+https://www.pjrc.com/teensy/td_download.html
+
+UPDATES:
+*  FS abstraction layer now supported. 
+*  Formatting USB and SD devices now Supported.
+*  Copying files.
 
 You will need a USB drive or SD card formatted as ext4 with a volume label to identify the drive. Compile any of the TeensyEXT4 examples and upload to the Teensy.
 
@@ -31,13 +38,17 @@ Example Sketches:
 - Dump.ino Dumps the data from Datalogger.ino.
 - ReadWrite.ino Demonstrates reading and writing test strings to a block device (append mode).
 - wavePlayerExt4.ino A sketch that plays wav files.
+- copyFilesUSB.ino Copy files between USB and SD devices. 2 USB and 1 SD device supported.
+- ext4Formatter.ino Formats a USB or SD device to ext4.
+
+WARNING: Fromatting an SD device works good but formatting a USB device is very SLOW! You might as well take a trip to the Bahamas and when you get back it might be done:)
+Have not figured out why yet.
 
 These are the example files so far.
 At this time it parallels SD and LittleFS fairly close.
 
 TODO:
-
-- Setup formatting block devices to ext4.
+- Set and get user and group permissions.
 - Set and get user and group ID's.
 - Implement chdir().
 
