@@ -11,7 +11,7 @@
  by Warren Watson
 */
 
-#include "SPI.h"
+//#include "SPI.h"
 #include "Arduino.h"
 #include "ext4FS.h"
 
@@ -127,6 +127,7 @@ void setup()
 
   // Start USBHost_t36, HUB(s) and USB devices.
   myusb.begin();
+  delay(500);
 
   Serial.printf("%cLWEXT4 MULTI USB DRIVE AND SD CARD FILE COPY TESTING\n\n",12);
   Serial.println("Initializing LWextFS ...");

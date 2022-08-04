@@ -2,6 +2,7 @@
 // Based on lwext4 by: Grzegorz Kostka (kostka.grzegorz@gmail.com)
 // Modified version of LittlFS_Usage.ino for use with LWextFS.
 
+#include <USBHost_t36.h>
 #include <Audio.h>
 #include "play_FS_wav.h" // Should be included in 'Audio.h'
 #include <Wire.h>
@@ -12,7 +13,6 @@
 
 extern USBHost myusb;
 
-LWextFS myext4fs;
 LWextFS myext4fs1;
 LWextFS myext4fs2;
 LWextFS myext4fs3;
@@ -46,7 +46,10 @@ void setup() {
 	Serial.print(CrashReport);
 
   Serial.printf("%cTeensy lwext WavFilePlayer\n\n",12);
- 
+
+  Serial.println("Initializing device sdxx.\n");
+  myext4fs.init_block_device(sdxx);  
+
   Serial.println("Initializing LWextFS ...");
 
   // Audio connections require memory to work.  For more
@@ -63,11 +66,8 @@ void setup() {
 
 //ext4_dmask_set(DEBUG_ALL);
 
-  Serial.println("Initializing device sdxx.\n");
-  myext4fs.init_block_device(sdxx);  
-
   if(!myext4fs1.begin(sdxx)) { // Change this to sdd1 for SD card.
-  Serial.printf("myext4fs.begin(sdxx) Failed: Drive plugged in?\n");
+    Serial.printf("myext4fs.begin(sdxx) Failed: Drive plugged in?\n");
 	while(1); // Give up !!!
   } else {
     Serial.printf("myext4fs.begin(sdxx): passed...\n");
