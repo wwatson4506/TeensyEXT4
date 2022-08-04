@@ -34,7 +34,7 @@ Example Sketches:
 - ext4DeviceInfo.ino Gives various stats about a mounted block device and it's partitions.
 - ListFiles.ino Gives a directory listing.
 - Files.ino Tests file existance.
-- Datalogger.ino Loggs ADC data to a block device.
+- Datalogger.ino Logs ADC data to a block device.
 - Dump.ino Dumps the data from Datalogger.ino.
 - ReadWrite.ino Demonstrates reading and writing test strings to a block device (append mode).
 - wavePlayerExt4.ino A sketch that plays wav files.
