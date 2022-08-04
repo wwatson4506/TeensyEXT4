@@ -36,6 +36,7 @@ USBHub hub8(myusb);
 USBDrive myDrive1(myusb);
 USBDrive myDrive2(myusb);
 USBDrive myDrive3(myusb);
+
 USBDrive *device_list[] = {&myDrive1, &myDrive2, &myDrive3};
 
 // SdFat usage with an SD card.
@@ -140,10 +141,8 @@ static int ext4_bd_open(struct ext4_blockdev *bdev)
 	index = get_bdev(bdev);
 	if(index == -1)
 		index = get_device_index(bdev);
-	if(!bd_list[index].pDrive->filesystemsStarted())
-		bd_list[index].pDrive->startFilesystems(); 
 	if(index <= 2) {
-//		if(bd_list[index].pDrive->checkConnectedInitialized()) return EIO;
+		if(bd_list[index].pDrive->checkConnectedInitialized()) return EIO;
 		bd_list[index].pbdev->part_offset = 0;
 		bd_list[index].pbdev->part_size = bd_list[index].pDrive->msDriveInfo.capacity.Blocks *
 							bd_list[index].pDrive->msDriveInfo.capacity.BlockSize;
@@ -169,8 +168,10 @@ static int ext4_bd_bread(struct ext4_blockdev *bdev, void *buf, uint64_t blk_id,
 	if(index == -1)
 		index = get_device_index(bdev);
 	if(index <= 2) {
+		status = bd_list[index].pDrive->checkConnectedInitialized();
+		if(status != EOK) return EIO;
 		status = bd_list[index].pDrive->msReadBlocks(blk_id,
-								(uint32_t)blk_cnt, bdev->bdif->ph_bsize, (uint8_t *)buf);
+								(uint32_t)blk_cnt, bdev->bdif->ph_bsize, buf);
 		if (status != 0) return EIO;
 	} else {
 		status = bd_list[index].pSD->readSectors(blk_id,
@@ -195,8 +196,10 @@ static int ext4_bd_bwrite(struct ext4_blockdev *bdev, const void *buf,
 	if(index == -1)
 		index = get_device_index(bdev);
 	if(index <= 2) {
+		status = bd_list[index].pDrive->checkConnectedInitialized();
+		if(status != EOK) return EIO;
 		status = bd_list[index].pDrive->msWriteBlocks(blk_id,
-								(uint32_t)blk_cnt, bdev->bdif->ph_bsize, (uint8_t *)buf);
+								(uint32_t)blk_cnt, bdev->bdif->ph_bsize, buf);
 	if (status != 0) return EIO;
 	} else {
 		status = bd_list[index].pSD->writeSectors(blk_id,
@@ -278,26 +281,24 @@ void lwext_get_mp(const char *fn, uint8_t id) {
 // Init block device.
 //******************************************************************************
 int LWextFS::init_block_device(uint8_t dev) {
-	uint8_t status = -1;
-
 	myusb.Task();
+
 	if(dev >= 4) dev /= 4;
 	if(dev < (CONFIG_EXT4_BLOCKDEVS_COUNT - 1)) {
-		if(!device_list[dev]->filesystemsStarted())
-			device_list[dev]->startFilesystems(); 
-		if(device_list[dev])
-			device_list[dev]->begin();
-			status = device_list[dev]->checkConnectedInitialized();
-			if(status == EOK) {
-				bd_list[dev].pDrive = device_list[dev];
-				bd_list[dev].dev_id = dev;
-				bd_list[dev].connected = true;
-				sprintf(bd_list[dev].name,"%s",deviceName[dev]);
-				bd_list[dev].pbdev = ext4_blkdev_list[dev];
-			} else if (status != EOK) {
-				sprintf(bd_list[dev].name,"UnKnown");
-				bd_list[dev].connected = false;
-			}
+		device_list[dev]->begin();
+		if(device_list[dev]->msDriveInfo.connected) {
+			bd_list[dev].pDrive = device_list[dev];
+			bd_list[dev].dev_id = dev;
+			bd_list[dev].connected = true;
+			sprintf(bd_list[dev].name,"%s",deviceName[dev]);
+			bd_list[dev].pbdev = ext4_blkdev_list[dev];
+		} else {
+			sprintf(bd_list[dev].name,"UnKnown");
+			bd_list[dev].connected = false;
+			bd_list[dev].pbdev = NULL;
+			bd_list[dev].pDrive = NULL;
+			return ENODEV;
+		}
 	} else {
 		sd = cardFactory.newCard(SD_CONFIG);
 		if(sd && !sd->errorCode()) { //Does not work!!
@@ -309,13 +310,15 @@ int LWextFS::init_block_device(uint8_t dev) {
 		} else {
 			sprintf(bd_list[dev].name,"UnKnown");
 			bd_list[dev].connected = false;
+			bd_list[dev].pSD = NULL;
+			bd_list[dev].pbdev = NULL;
 		}
 	}
 	if(bd_list[dev].connected) {
 		for(int i = 0; i < 4; i++) {
-			mount_list[(dev*4)+i].parent_bd = bd_list[dev];
+			mount_list[(dev*4)+i].parent_bd = bd_list[dev]; //Assign device.
 		}
-		scan_mbr(dev); // Get all partition info.
+		scan_mbr(dev); // Get all partition info for this device.
 	}
 	return EOK;
 }
@@ -494,16 +497,11 @@ int LWextFS::getMountStats(const char *vol, struct ext4_mount_stats *mpInfo) {
 int LWextFS::lwext_mkfs (struct ext4_blockdev *bdev, const char *label)
 {
 	int ercd = 0;
-//	int index;
-//	static struct ext4_blockdev * bd1;
 	static struct ext4_fs fs1;
 	static struct ext4_mkfs_info info1;
 
 	info1.block_size = 4096;
 	info1.journal = true;
-	
-//	index = get_device_index(bdev);
-//	bd1 = ext4_blkdev_list[index];
 	ercd = ext4_mkfs(&fs1, bdev, &info1, F_SET_EXT4, label);
 
 	return ercd;
