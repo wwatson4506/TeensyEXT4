@@ -106,6 +106,7 @@ typedef struct {
 	size_t   st_size;     /* File size (regular files only) */
 } stat_t;
 
+extern bd_mounts_t mount_list[MAX_MOUNT_POINTS];
 
 //******************************************************************************
 // Non-LWextFS protos.
@@ -343,24 +344,23 @@ public:
 
 	File open(const char *filepath, uint8_t mode = FILE_READ) {
 		if(strlen(filepath) == 1) filepath = ""; // Remove leading "/" for root dir.
-		strcpy(tmp, filepath);
-		lwext_get_mp(tmp, id);
+		sprintf(fullPath,"%s%s",mount_list[id].pname, filepath);
 		int rcode = 0;
 		if (mode == FILE_READ) {
 			stat_t info;
-			if (lwext_stat(tmp, &info) != EOK) return File();
+			if (lwext_stat(fullPath, &info) != EOK) return File();
 			if (info.st_mode == S_IFREG) {
 				ext4_file *file = (ext4_file *)malloc(sizeof(ext4_file));
 				if (!file) return File();
-				if (ext4_fopen(file, tmp, FMR) == EOK) {
-					return File(new EXT4File(file, tmp));
+				if (ext4_fopen(file, fullPath, FMR) == EOK) {
+					return File(new EXT4File(file, fullPath));
 				}
 				free(file);
 			} else { // DIR
 				ext4_dir *dir = (ext4_dir *)malloc(sizeof(ext4_dir));
 				if (!dir) return File();
-				if (ext4_dir_open(dir, tmp) == EOK) {
-					return File(new EXT4File(dir, tmp));
+				if (ext4_dir_open(dir, fullPath) == EOK) {
+					return File(new EXT4File(dir, fullPath));
 				}
 				free(dir);
 			}
@@ -368,89 +368,82 @@ public:
 			ext4_file *file = (ext4_file *)malloc(sizeof(ext4_file));
 			if (!file) return File();
 			if(mode == FILE_WRITE) {
-				rcode = ext4_fopen(file, tmp, FMWA);
+				rcode = ext4_fopen(file, fullPath, FMWA);
 			} else if (mode == FILE_WRITE_BEGIN) {
-				rcode = ext4_fopen(file, tmp, FMWC);
+				rcode = ext4_fopen(file, fullPath, FMWC);
 			}
 			if(rcode == EOK) {
 				//attributes get written when the file is closed
 				uint32_t filetime = 0;
 				uint32_t _now = Teensy3Clock.get();
-				rcode = ext4_ctime_get(tmp, (uint32_t *)&filetime);
+				rcode = ext4_ctime_get(fullPath, (uint32_t *)&filetime);
 				if(rcode != sizeof(filetime)) {
-					rcode = ext4_ctime_set(tmp, (uint32_t) _now);
+					rcode = ext4_ctime_set(fullPath, (uint32_t) _now);
 					if(rcode != EOK)
 						Serial.println("FO:: set attribute creation failed");
 				}
-				rcode = ext4_mtime_set(tmp, (uint32_t ) _now);
+				rcode = ext4_mtime_set(fullPath, (uint32_t ) _now);
 				if(rcode != EOK)
 					Serial.println("FO:: set attribute modified failed");
-				return File(new EXT4File(file, tmp));
+				return File(new EXT4File(file, fullPath));
 			}
 		}
-		tmp[0] = 0;
+		fullPath[0] = 0;
 		return File();
 	}
 	bool exists(const char *filepath) {
-		strcpy(tmp, filepath);
-		lwext_get_mp(tmp, id);
+		sprintf(fullPath,"%s%s",mount_list[id].pname, filepath);
 		stat_t info;
-		if (lwext_stat(tmp, &info) != EOK) return false;
-		tmp[0] = 0;
+		if (lwext_stat(fullPath, &info) != EOK) return false;
+		fullPath[0] = 0;
 		return true;
 	}
 	bool mkdir(const char *filepath) {
 		int rcode;
-		strcpy(tmp, filepath);
-		lwext_get_mp(tmp, id);
-		if (ext4_dir_mk(tmp) != EOK) return false;
+		sprintf(fullPath,"%s%s",mount_list[id].pname, filepath);
+		if (ext4_dir_mk(fullPath) != EOK) return false;
 		uint32_t _now = Teensy3Clock.get();
-		rcode = ext4_ctime_set(tmp, (uint32_t) _now);
+		rcode = ext4_ctime_set(fullPath, (uint32_t) _now);
 		if(rcode != EOK)
 			Serial.println("FD:: set creation time failed");
-		rcode = ext4_mtime_set(tmp, (uint32_t ) _now);
+		rcode = ext4_mtime_set(fullPath, (uint32_t ) _now);
 		if(rcode != EOK)
 			Serial.println("FD:: set modified time failed");
-		tmp[0] = 0;
+		fullPath[0] = 0;
 		return true;
 	}
 	bool rename(const char *oldfilepath, const char *newfilepath) {
-		strcpy(tmp, oldfilepath);
-		lwext_get_mp(tmp, id);
-		strcpy(tmp1, newfilepath);
-		lwext_get_mp(tmp1, id);
-		if (ext4_frename(tmp, tmp1) != EOK) return false;
+		sprintf(fullPath,"%s%s",mount_list[id].pname, oldfilepath);
+		sprintf(fullPath1,"%s%s",mount_list[id].pname, newfilepath);
+		if (ext4_frename(fullPath, fullPath1) != EOK) return false;
 		uint32_t _now = Teensy3Clock.get();
-		int rcode = ext4_mtime_set(tmp1, (uint32_t ) _now);
+		int rcode = ext4_mtime_set(fullPath1, (uint32_t ) _now);
 		if(rcode != EOK)
 			Serial.println("FD:: set modified time failed");
-		tmp[0] = 0;
-		tmp1[0] = 0;
+		fullPath[0] = 0;
+		fullPath1[0] = 0;
 		return true;
 	}
 	bool remove(const char *filepath) {
-		strcpy(tmp, filepath);
-		lwext_get_mp(tmp, id);
-		if (ext4_fremove(tmp) != EOK) return false;
-		tmp[0] = 0;
+		sprintf(fullPath,"%s%s",mount_list[id].pname, filepath);
+		if (ext4_fremove(fullPath) != EOK) return false;
+		fullPath[0] = 0;
 		return true;
 	}
 	bool rmdir(const char *filepath) {
-		strcpy(tmp, filepath);
-		lwext_get_mp(tmp, id);
-		if(ext4_dir_rm(tmp) != EOK) {
-			tmp[0] = 0;
+		sprintf(fullPath,"%s%s",mount_list[id].pname, filepath);
+		if(ext4_dir_rm(fullPath) != EOK) {
+			fullPath[0] = 0;
 			return false;
 		} else {
-			tmp[0] = 0;
+			fullPath[0] = 0;
 			return true;
 		}
 	}
 	uint64_t usedSize() {
-		strcpy(tmp, mpName[id]);
-		lwext_get_mp(tmp, id);
-		if(ext4_mount_point_stats(tmp, &stats) != EOK) return 0;
-		tmp[0] = 0;
+		sprintf(fullPath,"%s%s",mount_list[id].pname, mpName[id]);
+		if(ext4_mount_point_stats(fullPath, &stats) != EOK) return 0;
+		fullPath[0] = 0;
 		uint64_t blocks = stats.free_blocks_count;
 		if (blocks <= 0 || (uint64_t)blocks > stats.blocks_count) return totalSize();
 		return (stats.blocks_count - blocks) * stats.block_size;
@@ -461,8 +454,8 @@ public:
 	
 protected:
 	uint8_t id = 0;
-	char tmp[256];
-	char tmp1[256];
+	char fullPath[256];
+	char fullPath1[256];
 	struct ext4_mount_stats stats;
 };
 
@@ -474,7 +467,8 @@ public:
 	LWextFS() {};
 	bool begin(uint8_t device);
 	const char * getMediaName();
-	int init_block_device(uint8_t dev);
+	int init_block_device(void *drv, uint8_t dev);
+//	int init_block_device(USBDrive *pDrv, uint8_t dev);
 	int lwext_init_devices(void);
 	bool scan_mbr(uint8_t dev);
 	int lwext_mount(uint8_t dev);

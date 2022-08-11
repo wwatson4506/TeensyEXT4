@@ -2,9 +2,27 @@
 
 #include "ext4FS.h"
 
-extern USBHost myusb;
+USBHost myusb;
 
-LWextFS myext4fs;
+// Setup USBHost_t36 and as many HUB ports as needed.
+USBHub hub5(myusb);
+USBHub hub6(myusb);
+USBHub hub7(myusb);
+USBHub hub8(myusb);
+
+// Instances for the number of USB drives you are using.
+USBDrive extDrive1(myusb);
+USBDrive extDrive2(myusb);
+USBDrive extDrive3(myusb);
+
+USBDrive *drive_list[] = {&extDrive1, &extDrive2, &extDrive3};
+
+// EXT usage with an SDIO card.
+#define SD_CONFIG SdioConfig(FIFO_SDIO)
+SdCardFactory cardFactory;
+SdCard *sd = cardFactory.newCard(SD_CONFIG);
+
+LWextFS myext4fs1;
 LWextFS myext4fsp[16];
 
 struct ext4_mount_stats stats;
@@ -25,15 +43,29 @@ void setup() {
 	Serial.print(CrashReport);
 
   Serial.printf("%cTeensy lwext device info\n\n",12);
-  myusb.begin();
-
-//ext4_dmask_set(DEBUG_ALL);
-
+  Serial.println("Initializing LWextFS ...");
   Serial.println("Initializing all availble lwext devices.\n");
   Serial.println("Please Wait...\n");
-  int devcount = myext4fs.lwext_init_devices();  
-  Serial.print(devcount,DEC);
-  Serial.println(" lwext devices found.\n\n");
+
+  myusb.begin();
+  delay(3000);
+  myusb.Task();
+
+  for (uint16_t drive_index = 0; drive_index < (sizeof(drive_list)/sizeof(drive_list[0])); drive_index++) {
+    USBDrive *pdrive = drive_list[drive_index];
+    if (*pdrive) {
+      if (!pdrive->filesystemsStarted()) {
+        pdrive->startFilesystems();
+      }
+      myext4fs1.init_block_device(pdrive, drive_index);  
+    }
+  }
+  // Init SD card (Block device 3) fixed.
+  if(myext4fs1.init_block_device(sd, 3) == EOK) {  
+    Serial.printf("SD card is inserted...\n");
+  } else {
+    Serial.printf("SD card is NOT inserted...\n");
+  }
 
   Serial.println("Now we will list all physical block devices.\n");
   waitforInput();  
@@ -45,7 +77,6 @@ void setup() {
 
   Serial.println("Mount all mountable partitions (up to 4).\n");
   waitforInput();
-  Serial.println("This can take some time, Please wait...");
 
   int partCount = 0;
   for(i = 0; i < MAX_MOUNT_POINTS; i++) {

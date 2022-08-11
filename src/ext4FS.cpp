@@ -23,32 +23,16 @@
 #include <Arduino.h>
 #include <ext4FS.h>
 
+
 ext4FS EXT;
-USBHost myusb;
 
-// Setup USBHost_t36 and as many HUB ports as needed.
-USBHub hub5(myusb);
-USBHub hub6(myusb);
-USBHub hub7(myusb);
-USBHub hub8(myusb);
-
-// Instances for the number of USB drives you are using.
-USBDrive myDrive1(myusb);
-USBDrive myDrive2(myusb);
-USBDrive myDrive3(myusb);
-
-USBDrive *device_list[] = {&myDrive1, &myDrive2, &myDrive3};
-
-// SdFat usage with an SD card.
-#define SD_CONFIG SdioConfig(FIFO_SDIO)
-SdCardFactory cardFactory;
-SdCard *sd;
+extern USBHost myusb;
 
 /**@brief   Block size.*/
 #define BLOCK_SIZE 512
 
 static block_device_t bd_list[CONFIG_EXT4_BLOCKDEVS_COUNT];
-static bd_mounts_t mount_list[MAX_MOUNT_POINTS];
+bd_mounts_t mount_list[MAX_MOUNT_POINTS];
 
 //**********************BLOCKDEV INTERFACE**************************************
 static int ext4_bd_open(struct ext4_blockdev *bdev);
@@ -142,6 +126,9 @@ static int ext4_bd_open(struct ext4_blockdev *bdev)
 	if(index == -1)
 		index = get_device_index(bdev);
 	if(index <= 2) {
+		if (!bd_list[index].pDrive->filesystemsStarted()) {
+			bd_list[index].pDrive->startFilesystems();
+		}
 		if(bd_list[index].pDrive->checkConnectedInitialized()) return EIO;
 		bd_list[index].pbdev->part_offset = 0;
 		bd_list[index].pbdev->part_size = bd_list[index].pDrive->msDriveInfo.capacity.Blocks *
@@ -168,6 +155,9 @@ static int ext4_bd_bread(struct ext4_blockdev *bdev, void *buf, uint64_t blk_id,
 	if(index == -1)
 		index = get_device_index(bdev);
 	if(index <= 2) {
+		if (!bd_list[index].pDrive->filesystemsStarted()) {
+			bd_list[index].pDrive->startFilesystems();
+		}
 		status = bd_list[index].pDrive->checkConnectedInitialized();
 		if(status != EOK) return EIO;
 		status = bd_list[index].pDrive->msReadBlocks(blk_id,
@@ -196,6 +186,9 @@ static int ext4_bd_bwrite(struct ext4_blockdev *bdev, const void *buf,
 	if(index == -1)
 		index = get_device_index(bdev);
 	if(index <= 2) {
+		if (!bd_list[index].pDrive->filesystemsStarted()) {
+			bd_list[index].pDrive->startFilesystems();
+		}
 		status = bd_list[index].pDrive->checkConnectedInitialized();
 		if(status != EOK) return EIO;
 		status = bd_list[index].pDrive->msWriteBlocks(blk_id,
@@ -280,14 +273,15 @@ void lwext_get_mp(const char *fn, uint8_t id) {
 //******************************************************************************
 // Init block device.
 //******************************************************************************
-int LWextFS::init_block_device(uint8_t dev) {
+int LWextFS::init_block_device(void *drv, uint8_t dev) {
 	myusb.Task();
 
 	if(dev >= 4) dev /= 4;
 	if(dev < (CONFIG_EXT4_BLOCKDEVS_COUNT - 1)) {
-		device_list[dev]->begin();
-		if(device_list[dev]->msDriveInfo.connected) {
-			bd_list[dev].pDrive = device_list[dev];
+	USBDrive *pDrv = reinterpret_cast < USBDrive * > ( drv );
+
+		if(pDrv->msDriveInfo.connected) {
+			bd_list[dev].pDrive = pDrv;
 			bd_list[dev].dev_id = dev;
 			bd_list[dev].connected = true;
 			sprintf(bd_list[dev].name,"%s",deviceName[dev]);
@@ -300,9 +294,9 @@ int LWextFS::init_block_device(uint8_t dev) {
 			return ENODEV;
 		}
 	} else {
-		sd = cardFactory.newCard(SD_CONFIG);
-		if(sd && !sd->errorCode()) { //Does not work!!
-			bd_list[dev].pSD = sd;
+	SdCard *pDrv = reinterpret_cast < SdCard * > ( drv );
+		if(pDrv && !pDrv->errorCode()) {
+			bd_list[dev].pSD = pDrv;
 			bd_list[dev].dev_id = dev;
 			bd_list[dev].connected = true;
 			sprintf(bd_list[dev].name,"%s",deviceName[dev]);
@@ -312,6 +306,7 @@ int LWextFS::init_block_device(uint8_t dev) {
 			bd_list[dev].connected = false;
 			bd_list[dev].pSD = NULL;
 			bd_list[dev].pbdev = NULL;
+			return ENODEV;
 		}
 	}
 	if(bd_list[dev].connected) {
@@ -331,7 +326,7 @@ int LWextFS::lwext_init_devices(void) {
 	
 	for(int i = 0; i < CONFIG_EXT4_BLOCKDEVS_COUNT; i++) {
 		bd_list[i].connected = false;		
-		init_block_device(i);
+//		init_block_device(i);
 		if(bd_list[i].connected) {
 			availableDevices++;
 		}
