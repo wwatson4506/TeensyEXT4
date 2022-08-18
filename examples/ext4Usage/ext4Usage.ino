@@ -54,7 +54,7 @@ File file, file1, file2;
 #define sdd1 12  // First partition on SD device
 
 // Set this to one of the above devices.
-#define sdxx sdd1
+#define sdxx sda1
 
 void setup() {
    while (!Serial) {
