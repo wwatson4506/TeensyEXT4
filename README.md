@@ -13,6 +13,7 @@ or Teensyduino-1.57:
 https://www.pjrc.com/teensy/td_download.html
 
 UPDATES:
+*  This version eliminates the need for the LWextFS class. Examples updated.
 *  FS abstraction layer now supported. 
 *  Formatting USB and SD devices now Supported.
 *  Copying files.
