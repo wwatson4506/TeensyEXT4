@@ -1,4 +1,4 @@
-# TeensyEXT4V2
+# TeensyEXT4V3
 
 This is the second version of lwext4 adapted for use with the Teensy T3.6/T4.x. 
 
