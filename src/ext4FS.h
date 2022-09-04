@@ -340,12 +340,14 @@ public:
 	const char *get_mp_name(uint8_t id);
 	bd_mounts_t *get_mount_list(void);
 	int lwext_stat(const char *filename, stat_t *buf);
-	const char * getVolumeName();
+	const char * getVolumeLabel();
 	void dumpBDList(void);
 	void dumpMountList();
 
 	File open(const char *filepath, uint8_t mode = FILE_READ) {
 		if(strlen(filepath) == 1) filepath = ""; // Remove leading "/" for root dir.
+		if(filepath[0] == '/') // Strip off leading '/' including '\0'
+			memmove((char *)filepath,filepath+1, strlen(filepath));
 		sprintf(fullPath,"%s%s",get_mp_name(id), filepath);
 		int rcode = 0;
 		if (mode == FILE_READ) {
@@ -394,6 +396,8 @@ public:
 		return File();
 	}
 	bool exists(const char *filepath) {
+		if(filepath[0] == '/') // Strip off leading '/' including '\0'
+			memmove((char *)filepath,filepath+1, strlen(filepath));
 		sprintf(fullPath,"%s%s",get_mp_name(id), filepath);
 		stat_t info;
 		if (lwext_stat(fullPath, &info) != EOK) return false;
@@ -402,45 +406,62 @@ public:
 	}
 	bool mkdir(const char *filepath) {
 		int rcode;
+		if(filepath[0] == '/') // Strip off leading '/' including '\0'
+			memmove((char *)filepath,filepath+1, strlen(filepath));
 		sprintf(fullPath,"%s%s",get_mp_name(id), filepath);
 		if (ext4_dir_mk(fullPath) != EOK) return false;
 		uint32_t _now = Teensy3Clock.get();
 		rcode = ext4_ctime_set(fullPath, (uint32_t) _now);
 		if(rcode != EOK)
-			Serial.println("FD:: set creation time failed");
+			Serial.println("Set creation time failed");
 		rcode = ext4_mtime_set(fullPath, (uint32_t ) _now);
 		if(rcode != EOK)
-			Serial.println("FD:: set modified time failed");
+			Serial.println("Set modified time failed");
+		ext4_cache_flush(fullPath);
 		fullPath[0] = 0;
 		return true;
 	}
 	bool rename(const char *oldfilepath, const char *newfilepath) {
+		if(oldfilepath[0] == '/') // Strip off leading '/' including '\0'
+			memmove((char *)oldfilepath,oldfilepath+1, strlen(oldfilepath));
+		if(newfilepath[0] == '/') // Strip off leading '/' including '\0'
+			memmove((char *)newfilepath,newfilepath+1, strlen(newfilepath));
 		sprintf(fullPath,"%s%s",get_mp_name(id), oldfilepath);
 		sprintf(fullPath1,"%s%s",get_mp_name(id), newfilepath);
-		if (ext4_frename(fullPath, fullPath1) != EOK) return false;
+		int rcode = ext4_frename(fullPath, fullPath1);
+		if(rcode != EOK) {
+			Serial.printf("rename() Failed: %d\n",rcode);
+			 return false;
+		}
 		uint32_t _now = Teensy3Clock.get();
-		int rcode = ext4_mtime_set(fullPath1, (uint32_t ) _now);
+		rcode = ext4_mtime_set(fullPath1, (uint32_t ) _now);
 		if(rcode != EOK)
-			Serial.println("FD:: set modified time failed");
+			Serial.println("Set modified time failed");
+		ext4_cache_flush(fullPath1);
 		fullPath[0] = 0;
 		fullPath1[0] = 0;
 		return true;
 	}
 	bool remove(const char *filepath) {
+		if(filepath[0] == '/') // Strip off leading '/' including '\0'
+			memmove((char *)filepath,filepath+1, strlen(filepath));
 		sprintf(fullPath,"%s%s",get_mp_name(id), filepath);
 		if (ext4_fremove(fullPath) != EOK) return false;
+		ext4_cache_flush(fullPath);
 		fullPath[0] = 0;
 		return true;
 	}
 	bool rmdir(const char *filepath) {
+		if(filepath[0] == '/') // Strip off leading '/' including '\0'
+			memmove((char *)filepath,filepath+1, strlen(filepath));
 		sprintf(fullPath,"%s%s",get_mp_name(id), filepath);
 		if(ext4_dir_rm(fullPath) != EOK) {
 			fullPath[0] = 0;
 			return false;
-		} else {
-			fullPath[0] = 0;
-			return true;
 		}
+		ext4_cache_flush(fullPath);
+		fullPath[0] = 0;
+		return true;
 	}
 	uint64_t usedSize() {
 		sprintf(fullPath,"%s%s",get_mp_name(id), mpName[id]);

@@ -373,7 +373,7 @@ bool ext4FS::begin(uint8_t device) {
 //******************************************************************************
 // Return volume name.
 //******************************************************************************
-const char * ext4FS::getVolumeName() {
+const char * ext4FS::getVolumeLabel() {
 	return stats.volume_name;
 }
 
