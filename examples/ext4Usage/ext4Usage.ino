@@ -37,7 +37,7 @@ SdCard *sd = cardFactory.newCard(SD_CONFIG);
 //**********************************************************************
 
 //**********************************************************************
-// Setup four instances of ext4FS (four mountable partittions).
+// Setup four instances of ext4FS (four mountable partitions).
 //**********************************************************************
 ext4FS myext4fs1;
 ext4FS myext4fs2;
@@ -94,7 +94,7 @@ void setup() {
     Serial.printf("myext4fs.begin(%s): passed...\n", mpName[sdxx]);
   }
 
-  Serial.printf("Volume Name: %s\n",myext4fs1.getVolumeName());
+  Serial.printf("Volume Name: %s\n",myext4fs1.getVolumeLabel());
 
   // Now lets create a file and write some data.  Note: basically the same usage for 
   // creating and writing to a file using SD library.

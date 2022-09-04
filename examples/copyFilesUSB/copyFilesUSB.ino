@@ -110,19 +110,19 @@ void listDirectories(void) {
 	if(ml[sda1].mounted) {
 		Serial.printf("-------------------------------------------------\n");
 		Serial.printf("sda1 directory listing:\n");
-		Serial.printf("Volume Name: %s\n",myext4fs1.getVolumeName());
+		Serial.printf("Volume Name: %s\n",myext4fs1.getVolumeLabel());
 		printDirectory(myext4fs1);
 		Serial.printf("Bytes Used: %llu, Bytes Total:%llu\n\n", myext4fs1.usedSize(), myext4fs1.totalSize());
 	}
 	if(ml[sdb1].mounted) {
 		Serial.printf("sdb1 directory listing:\n");
-		Serial.printf("Volume Name: %s\n",myext4fs2.getVolumeName());
+		Serial.printf("Volume Name: %s\n",myext4fs2.getVolumeLabel());
 		printDirectory(myext4fs2);
 		Serial.printf("Bytes Used: %llu, Bytes Total:%llu\n\n", myext4fs2.usedSize(), myext4fs2.totalSize());
 	}
 	if(ml[sdd1].mounted) {
 		Serial.printf("sdd1 card directory listing:\n");
-		Serial.printf("Volume Name: %s\n",myext4fs3.getVolumeName());
+		Serial.printf("Volume Name: %s\n",myext4fs3.getVolumeLabel());
 		printDirectory(myext4fs3);
 		Serial.printf("Bytes Used: %llu, Bytes Total:%llu\n\n", myext4fs3.usedSize(), myext4fs3.totalSize());
 	}

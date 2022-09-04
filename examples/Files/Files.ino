@@ -100,7 +100,7 @@ void setup()
     Serial.printf("myext4fs.begin(%s): passed...\n",mpName[sdxx]);
   }
 
-  Serial.printf("Volume Name: %s\n",myext4fs1.getVolumeName());
+  Serial.printf("Volume Name: %s\n",myext4fs1.getVolumeLabel());
   if (EXT.exists("example.txt")) {
     Serial.println("example.txt exists.");
   }

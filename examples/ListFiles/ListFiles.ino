@@ -93,7 +93,7 @@ void setup() {
   } else {
     Serial.printf("myext4fs.begin(%s): passed...\n",mpName[sdxx]);
   }
-  Serial.printf("Volume Name: %s\n",myext4fs1.getVolumeName());
+  Serial.printf("Volume Name: %s\n",myext4fs1.getVolumeLabel());
 
   Serial.print("Space Used = ");
   Serial.println(myext4fs1.usedSize());
