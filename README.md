@@ -1,4 +1,4 @@
-# TeensyEXT4V3
+# TeensyEXT4V2
 
 This is the second version of lwext4 adapted for use with the Teensy T3.6/T4.x. 
 
@@ -17,7 +17,6 @@ UPDATES:
 *  FS abstraction layer now supported. 
 *  Formatting USB and SD devices now Supported.
 *  Copying files.
-*  Use with MTP_Teensy now supported.
 
 You will need a USB drive or SD card formatted as ext4 with a volume label to identify the drive. Compile any of the TeensyEXT4 examples and upload to the Teensy.
 

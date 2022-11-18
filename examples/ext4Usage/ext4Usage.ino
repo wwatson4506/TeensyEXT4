@@ -82,7 +82,7 @@ void setup() {
   }
   // Init SD card (Block device 3) fixed.
   if(myext4fs1.init_block_device(sd, 3) == EOK) {  
-    Serial.printf("SD card is inserted...\n");
+    Serial.printf("SD card is inserted...sd = 0x%x\n",sd);
   } else {
     Serial.printf("SD card is NOT inserted...\n");
   }

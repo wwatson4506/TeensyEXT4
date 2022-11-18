@@ -24,15 +24,33 @@
 #define __EXT4FS_H__
 
 #include "USBHost_t36.h"
+
+#ifdef __cplusplus
+  extern "C" {
+#endif
 #include "ext4/ext4_config.h"
 #include "ext4/ext4_mbr.h"
 #include "ext4/ext4.h"
 #include "ext4/ext4_fs.h"
 #include "ext4/ext4_mkfs.h"
+#ifdef __cplusplus
+}
+#endif
+
+// Uncomment USE_RW_LEDS below to show read/write activity. LED pins are defined
+// in ext4FS.h.
+#define USE_RW_LEDS 1
+
+// Setup debugging LED pin defs. (Uncomment
+// Used mainly to see the activity of reads and writes.
+#define WRITE_PIN			33		// Pin number of drive write activity led (RED LED).
+#define READ_PIN			34		// Pin number of drive read activity led (GREEN LED).
 
 // Ext2/3/4 File system type in MBR.
 #define EXT4_TYPE 0x83
 #define BLOCK_SIZE 512
+
+enum {USB_TYPE=0, SD_TYPE=CONFIG_EXT4_BLOCKDEVS_COUNT-1}; // what type of block device
 
 /* controls for block devices */
 #define DEVICE_CTRL_GET_SECTOR_SIZE  0
@@ -76,8 +94,8 @@ const char mpName[][MAX_MOUNT_POINTS] =
 // The following structures used for low level block devices and mount info.
 //******************************************************************************
 // Physical Block Device.
-typedef struct  {
-	uint8_t dev_id = 0;
+typedef struct block_device {
+	int dev_id = -1;
 	char name[32];
 	USBDrive *pDrive;
 	SdCard   *pSD;
@@ -86,14 +104,18 @@ typedef struct  {
 }block_device_t;
 
 //  Mount Point Info.
-typedef struct  {
+typedef struct bd_mounts {
 	bool available = false;
+	char volName[32];
 	char pname[32];
 	struct ext4_blockdev partbdev;
-    uint8_t pt;
+    uint8_t pt = 0;
 	block_device_t parent_bd;
 	bool mounted = false;
 }bd_mounts_t;
+
+static block_device_t bd_list[CONFIG_EXT4_BLOCKDEVS_COUNT];
+static bd_mounts_t mount_list[MAX_MOUNT_POINTS];
 
 // Stat struct. File type and size.
 typedef struct {
@@ -101,23 +123,23 @@ typedef struct {
 	size_t   st_size;     // File size (regular files only)
 } stat_t;
 
-static block_device_t bd_list[CONFIG_EXT4_BLOCKDEVS_COUNT];
-static bd_mounts_t mount_list[MAX_MOUNT_POINTS];
-
-
 //******************************************************************************
 // Non-ext4FS protos.
 //******************************************************************************
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 int get_bdev(struct ext4_blockdev * bdev);
 int get_device_index(struct ext4_blockdev *bdev);
+void init_device_id(void);
 void mkfsPrint(const char *ch);
 #ifdef __cplusplus
 }
 #endif
 //******************************************************************************
+
+class ext4FS;
 
 // Use FILE_READ & FILE_WRITE as defined by FS.h
 #if defined(FILE_READ) && !defined(FS_H)
@@ -324,12 +346,14 @@ private:
 class ext4FS : public FS
 {
 public:
-	ext4FS() {}
+	ext4FS() { init(); }
+	~ext4FS() {}
+	
 	virtual bool format(int type=0, char progressChar=0, Print& pr=Serial) {
 		return true;
 	}
+	void init();
 	int init_block_device(void *drv, uint8_t dev);
-	int lwext_init_devices(void);
 	bool scan_mbr(uint8_t dev);
 	bool begin(uint8_t device);
 	const char * getMediaName();
@@ -338,6 +362,7 @@ public:
 	int getMountStats(const char * vol, struct ext4_mount_stats *mpInfo);
 	int lwext_mkfs (struct ext4_blockdev *bdev, const char *label = "");
 	const char *get_mp_name(uint8_t id);
+	block_device_t *get_bd_list(void);
 	bd_mounts_t *get_mount_list(void);
 	int lwext_stat(const char *filename, stat_t *buf);
 	const char * getVolumeLabel();
@@ -477,8 +502,8 @@ public:
 	
 protected:
 	uint8_t id = 0;
-	char fullPath[256];
-	char fullPath1[256];
+	char fullPath[512];
+	char fullPath1[512];
 	struct ext4_mount_stats stats;
 	struct ext4_mbr_bdevs bdevs;
 };

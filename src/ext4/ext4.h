@@ -207,7 +207,7 @@ int ext4_mount_point_stats(const char *mount_point,
 
 /**@brief   Setup OS lock routines.
  *
- * @param   mount_pount Mount point.
+ * @param   mount_point Mount point.
  * @param   locks  Lock and unlock functions
  *
  * @return Standard error code. */

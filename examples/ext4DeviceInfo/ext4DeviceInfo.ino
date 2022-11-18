@@ -32,10 +32,6 @@ bd_mounts_t *ml = myext4fs1.get_mount_list();
 
 void setup() {
   int i = 0;  
-  // Open serial communications and wait for port to open:
-  Serial.begin(9600);
-  while (!Serial) { ; // wait for Arduino Serial Monitor
-  }
    while (!Serial) {
     yield(); // wait for serial port to connect.
   }

@@ -84,7 +84,7 @@ void setup() {
   Serial.print("\nWARNING: This will destroy any data on ---> ");
   Serial.println(mpName[sdxx]);
   waitforInput();
-
+  
   int result = myext4fs1.lwext_mkfs(&ml[sdxx].partbdev, "32GUSBEXT4");
   if(result != EOK)
     Serial.printf("ext4 format failed: %d\n", result);

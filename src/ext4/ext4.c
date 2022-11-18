@@ -136,8 +136,7 @@ int ext4_device_register(struct ext4_blockdev *bd, const char *dev_name) {
 
 int ext4_device_unregister(const char *dev_name)
 {
-//	ext4_assert(dev_name);
-
+	ext4_assert(dev_name);
 	for (size_t i = 0; i < CONFIG_EXT4_BLOCKDEVS_COUNT; ++i) {
 		if (strcmp(s_bdevices[i].name, dev_name))
 			continue;
@@ -145,6 +144,7 @@ int ext4_device_unregister(const char *dev_name)
 		memset(&s_bdevices[i], 0, sizeof(s_bdevices[i]));
 	}
 
+//	return EOK;
 	return ENOENT;
 }
 
@@ -448,7 +448,6 @@ int ext4_umount(const char *mount_point)
 			break;
 		}
 	}
-
 	if (!mp)
 		return ENODEV;
 
@@ -463,6 +462,10 @@ int ext4_umount(const char *mount_point)
 
 	r = ext4_block_fini(mp->fs.bdev);
 Finish:
+//-------------------------------------------------------------------
+// Added 10-29-22
+	mp->mounted = 0; // This is needed so mount point can be re-used.
+//-------------------------------------------------------------------
 	mp->fs.bdev->fs = NULL;
 	return r;
 }
@@ -1330,7 +1333,6 @@ int ext4_frename(const char *path, const char *new_path)
 	uint32_t parent_inode, child_inode;
 	struct ext4_mountpoint *mp = ext4_get_mount(path);
 	struct ext4_inode_ref child_ref, parent_ref;
-
 	if (!mp)
 		return ENOENT;
 
@@ -2573,7 +2575,7 @@ static int ext4_mknod_set(ext4_file *f, uint32_t dev)
 	struct ext4_inode_ref ref;
 	int r;
 
-//	ext4_assert(f && f->mp);
+	ext4_assert(f && f->mp);
 
 	r = ext4_fs_get_inode_ref(&f->mp->fs, f->inode, &ref);
 	if (r != EOK)
