@@ -39,7 +39,7 @@
 
 // Uncomment USE_RW_LEDS below to show read/write activity. LED pins are defined
 // in ext4FS.h.
-#define USE_RW_LEDS 1
+#define USE_RW_LEDS 0
 
 // Setup debugging LED pin defs. (Uncomment
 // Used mainly to see the activity of reads and writes.
