@@ -115,10 +115,11 @@ void ext4FS::dumpBDList(void) {
 			Serial.printf("bd_list[%d].*pDrive = %d (USB)\n", i, bd_list[i].pDrive);
 			Serial.printf("bd_list[%d].*pSD = %d (SD)\n", i, bd_list[i].pSD);
 			Serial.printf("bd_list[%d].*pbdev = %d\n", i, bd_list[i].pbdev);
-			if(bd_list[i].connected)
-			Serial.printf("bd_list[%d].connected = true\n\n",i);
-			else
-			Serial.printf("bd_list[%d].connected = false\n\n",i);
+			if(bd_list[i].connected) {
+				Serial.printf("bd_list[%d].connected = true\n\n",i);
+			} else {
+				Serial.printf("bd_list[%d].connected = false\n\n",i);
+			}
 		}
 	}
 }
