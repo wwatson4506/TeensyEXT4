@@ -1,6 +1,6 @@
 // ext4Usage.ino  Teensy lwext4 testing 
 // Based on lwext4 by: Grzegorz Kostka (kostka.grzegorz@gmail.com)
-// Modified version of LittlFS_Usage.ino for use with LWextFS.
+// Modified version of LittlFS_Usage.ino for use with TeensyEXT4.
 
 #include "ext4FS.h"
 
@@ -81,11 +81,9 @@ void setup() {
     }
   }
   // Init SD card (Block device 3) fixed.
-  if(myext4fs1.init_block_device(sd, 3) == EOK) {  
-    Serial.printf("SD card is inserted...sd = 0x%x\n",sd);
-  } else {
-    Serial.printf("SD card is NOT inserted...\n");
-  }
+  myext4fs1.init_block_device(sd, 3) == EOK ?
+  Serial.printf("SD card is inserted...sd = 0x%x\n",sd) :
+  Serial.printf("SD card is NOT inserted...\n");
 
   if(!myext4fs1.begin(sdxx)) { // Change this to sdd1 for SD card.
     Serial.printf("myext4fs.begin(%s) Failed: Drive plugged in?\n",mpName[sdxx]);
@@ -162,11 +160,11 @@ void setup() {
   Serial.println("\n---------------");
   Serial.println("Now lets create a file and read the data back...");
   
-  // LWextFS also supports truncate function similar to SDFat. As shown in this
+  // ext4FS also supports truncate function similar to SDFat. As shown in this
   // example, you can truncate files.
   //
   Serial.println();
-  Serial.println("Writing to datalog.bin using LWextFS functions");
+  Serial.println("Writing to datalog.bin using ext4FS functions");
   file1 = myext4fs1.open("datalog.bin", FILE_WRITE);
   unsigned int len = file1.size();
   Serial.print("datalog.bin started with ");
@@ -176,7 +174,7 @@ void setup() {
     // reduce the file to zero if it already had data
     file1.truncate();
   }
-  file1.print("Just some test data written to the file (by LWextFS functions)");
+  file1.print("Just some test data written to the file (by ext4FS functions)");
   file1.write((uint8_t) 0);
   file1.close();
 
@@ -184,7 +182,7 @@ void setup() {
   // remember to close the file before opening as a regular SD File.
   //
   Serial.println();
-  Serial.println("Reading to datalog.bin using LWextFS functions");
+  Serial.println("Reading to datalog.bin using ext4FS functions");
   file2 = myext4fs1.open("datalog.bin");
   if (file2) {
     char mybuffer[100];
@@ -203,7 +201,9 @@ void setup() {
     Serial.println("unable to open datalog.bin :(");
   }
   file2.close();
-  Serial.println("unmounting sdxx...");
+  Serial.print("unmounting ");
+  Serial.println(mpName[sdxx]);
+  
   myext4fs1.lwext_umount(sdxx);
   
   Serial.println("\nBasic Usage Example Finished");

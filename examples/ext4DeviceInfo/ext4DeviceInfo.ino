@@ -35,8 +35,10 @@ void setup() {
    while (!Serial) {
     yield(); // wait for serial port to connect.
   }
-  if(CrashReport)
+  if(CrashReport) {
 	Serial.print(CrashReport);
+    waitforInput();  
+  }
 
   Serial.printf("%cTeensy lwext device info\n\n",12);
   Serial.println("Initializing ext4FS ...");

@@ -1,6 +1,7 @@
 /*
-  LWext4 Multi MSC USB Drive and SD card filecopy testing. 
-   
+ TeensyEXT4 Multi MSC USB Drive and SD card filecopy testing. 
+ Based on lwext4 by: Grzegorz Kostka (kostka.grzegorz@gmail.com)   
+ 
  This example shows how use the mscFS and SD libraries to copy files.
  between USB, SDIO and External SD card devices. It also demonstrates
  hot plugging both USB drives and SD cards. There are two functions that
@@ -35,7 +36,7 @@ SdCardFactory cardFactory;
 SdCard *sd = cardFactory.newCard(SD_CONFIG);
 
 //**********************************************************************
-// Setup four instances of LWextFS (four mountable partittions).
+// Setup four instances of ext4FS (four mountable partittions).
 //**********************************************************************
 ext4FS myext4fs1;
 ext4FS myext4fs2;
@@ -139,9 +140,9 @@ void setup()
   if(CrashReport)
 	Serial.print(CrashReport);
 
-  Serial.printf("%cLWEXT4 MULTI USB DRIVE AND SD CARD FILE COPY TESTING\n\n",12);
+  Serial.printf("%cext4FS MULTI USB DRIVE AND SD CARD FILE COPY TESTING\n\n",12);
   Serial.println("Initializing ext4FS ...");
-  Serial.println("Initializing all availble lwext4 devices.\n");
+  Serial.println("Initializing all availble ext4FS devices.\n");
   Serial.println("Please Wait...\n");
 
   // Start USBHost_t36, HUB(s) and USB devices.
@@ -159,29 +160,21 @@ void setup()
     }
   }
   // Init SD card (Block device 3) fixed.
-  if(myext4fs1.init_block_device(sd, 3) == EOK) {  
-    Serial.printf("SD card is inserted...\n");
-  } else {
-    Serial.printf("SD card is NOT inserted...\n");
-  }
+  myext4fs1.init_block_device(sd, 3) == EOK ?
+  Serial.printf("SD card is inserted...sd = 0x%x\n",sd) :
+  Serial.printf("SD card is NOT inserted...\n");
   
-  if(!myext4fs1.begin(sda1)) {
-    Serial.println("myext4fs.begin(sda1) Failed: Drive plugged in?");
-  } else {
-    Serial.println("myext4fs.begin(sda1): passed...");
-  }
+  myext4fs1.begin(sda1) == false ?
+  Serial.println("myext4fs.begin(sda1) Failed: Drive plugged in?") :
+  Serial.println("myext4fs.begin(sda1): passed...");
  
-  if(!myext4fs2.begin(sdb1)) {
-    Serial.println("myext4fs.begin(sdb1) Failed: Drive plugged in?");
-  } else {
-    Serial.println("myext4fs.begin(sdb1): passed...");
-  }
+  myext4fs2.begin(sdb1) == false ?
+  Serial.println("myext4fs.begin(sdb1) Failed: Drive plugged in?") :
+  Serial.println("myext4fs.begin(sdb1): passed...");
 
-  if(!myext4fs3.begin(sdd1)) {
-    Serial.println("myext4fs.begin(sdd1) Failed: Drive plugged in?");
-  } else {
-    Serial.println("myext4fs.begin(sdd1): passed...");
-  }
+  myext4fs3.begin(sdd1) == false ?
+  Serial.println("myext4fs.begin(sdd1) Failed: Drive plugged in?") :
+  Serial.println("myext4fs.begin(sdd1): passed...");
 }
 
 void loop(void) {

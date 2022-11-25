@@ -1,5 +1,5 @@
 /*
-  lwext4 file dump
+  TeeensyEXT4 file dump
  
  This example code is in the public domain.
 */
@@ -39,7 +39,7 @@ SdCard *sd = cardFactory.newCard(SD_CONFIG);
 //**********************************************************************
 
 //**********************************************************************
-// Setup four instances of LWextFS (four mountable partittions).
+// Setup four instances of ext4FS (four mountable partittions).
 //**********************************************************************
 ext4FS myext4fs1;
 ext4FS myext4fs2;
@@ -82,11 +82,9 @@ void setup()
     }
   }
   // Init SD card (Block device 3) fixed.
-  if(myext4fs1.init_block_device(sd, 3) == EOK) {  
-    Serial.printf("SD card is inserted...\n");
-  } else {
-    Serial.printf("SD card is NOT inserted...\n");
-  }
+  myext4fs1.init_block_device(sd, 3) == EOK ?
+  Serial.printf("SD card is inserted...sd = 0x%x\n",sd) :
+  Serial.printf("SD card is NOT inserted...\n");
 
   if(!myext4fs1.begin(sdxx)) { // Change this to sdd1 for SD card.
     Serial.printf("myext4fs.begin(%s) Failed: Drive plugged in?\n",mpName[sdxx]);

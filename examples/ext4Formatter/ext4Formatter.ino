@@ -1,5 +1,7 @@
-// Format an block device to ext4.
-
+// Format a block device to ext4.
+// Very slow... EXT4 formatting is more extensive
+// than EXFAT. All block groups and inodes are
+// initialized during formatting.
 #include "ext4FS.h"
 
 USBHost myusb;
@@ -23,7 +25,7 @@ SdCardFactory cardFactory;
 SdCard *sd = cardFactory.newCard(SD_CONFIG);
 
 //**********************************************************************
-// Setup four instances of LWextFS (four mountable partittions).
+// Setup four instances of ext4FS (four mountable partittions).
 //**********************************************************************
 ext4FS myext4fs1;
 ext4FS myext4fs2;
@@ -37,7 +39,7 @@ ext4FS myext4fs4;
 #define sdd1 12  // First partition on SD device
 
 // Set this to one of the above devices.
-#define sdxx sda1
+#define sdxx sdd1
 
 // Grab a pointer to the mount list.
 bd_mounts_t *ml = myext4fs1.get_mount_list();
@@ -75,11 +77,9 @@ void setup() {
     }
   }
   // Init SD card (Block device 3) fixed.
-  if(myext4fs1.init_block_device(sd, 3) == EOK) {  
-    Serial.printf("SD card is inserted...\n");
-  } else {
-    Serial.printf("SD card is NOT inserted...\n");
-  }
+  myext4fs1.init_block_device(sd, 3) == EOK ?
+  Serial.printf("SD card is inserted...sd = 0x%x\n",sd) :
+  Serial.printf("SD card is NOT inserted...\n");
 
   Serial.print("\nWARNING: This will destroy any data on ---> ");
   Serial.println(mpName[sdxx]);
