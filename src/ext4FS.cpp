@@ -28,8 +28,8 @@ ext4FS EXT;
 
 extern USBHost myusb;
 
-//static block_device_t bd_list[CONFIG_EXT4_BLOCKDEVS_COUNT];
-//static bd_mounts_t mount_list[MAX_MOUNT_POINTS];
+//DMAMEM static block_device_t bd_list[CONFIG_EXT4_BLOCKDEVS_COUNT];
+//DMAMEM static bd_mounts_t mount_list[MAX_MOUNT_POINTS];
 
 //**********************BLOCKDEV INTERFACE**************************************
 static int ext4_bd_open(struct ext4_blockdev *bdev);
@@ -115,11 +115,10 @@ void ext4FS::dumpBDList(void) {
 			Serial.printf("bd_list[%d].*pDrive = %d (USB)\n", i, bd_list[i].pDrive);
 			Serial.printf("bd_list[%d].*pSD = %d (SD)\n", i, bd_list[i].pSD);
 			Serial.printf("bd_list[%d].*pbdev = %d\n", i, bd_list[i].pbdev);
-			if(bd_list[i].connected) {
-				Serial.printf("bd_list[%d].connected = true\n\n",i);
-			} else {
-				Serial.printf("bd_list[%d].connected = false\n\n",i);
-			}
+			if(bd_list[i].connected)
+			Serial.printf("bd_list[%d].connected = true\n\n",i);
+			else
+			Serial.printf("bd_list[%d].connected = false\n\n",i);
 		}
 	}
 }
@@ -326,48 +325,53 @@ const char *ext4FS::get_mp_name(uint8_t id) {
 }
 
 //******************************************************************************
+// Helper function to clear a bd_list[] entry. (device was disconnected).
+//******************************************************************************
+bool ext4FS::clr_BDL_entry(uint8_t dev) {
+	if(dev > (CONFIG_EXT4_BLOCKDEVS_COUNT - 1)) return false;
+	sprintf(bd_list[dev].name,"UnKnown");
+	bd_list[dev].connected = false;
+	bd_list[dev].pbdev = NULL;
+	bd_list[dev].pDrive = NULL;
+	bd_list[dev].dev_id = -1;
+	return true;
+}
+
+//******************************************************************************
 // Init block device.
 //******************************************************************************
 int ext4FS::init_block_device(void *drv, uint8_t dev) {
 	myusb.Task();
 
 	if(dev >= 4) dev /= 4;
-	if(dev < (CONFIG_EXT4_BLOCKDEVS_COUNT - 1)) {
+	if(dev < (CONFIG_EXT4_BLOCKDEVS_COUNT - 1)) { // USB block devices.
 		USBDrive *pDrv = reinterpret_cast < USBDrive * > ( drv );
-		if(pDrv->msDriveInfo.connected && bd_list[dev].connected == true)
+		if(pDrv->msDriveInfo.connected && bd_list[dev].connected == true) {
 			return EOK; // No change needed.
-		if(pDrv->msDriveInfo.connected) { 
+		} else if(pDrv->msDriveInfo.connected && bd_list[dev].connected == false) { 
 			bd_list[dev].pDrive = pDrv;
 			bd_list[dev].dev_id = dev;
 			bd_list[dev].connected = true;
 			sprintf(bd_list[dev].name,"%s",deviceName[dev]);
 			bd_list[dev].pbdev = ext4_blkdev_list[dev];
 		} else {
-			sprintf(bd_list[dev].name,"UnKnown");
-			bd_list[dev].connected = false;
-			bd_list[dev].pbdev = NULL;
-			bd_list[dev].pDrive = NULL;
-			bd_list[dev].dev_id = -1;
+			clr_BDL_entry(dev);
 			return ENODEV;
 		}
-	} else if(dev == 3) {
+	} else if(dev == 3) { // SDIO card (Fixed).
 		SdCard *pDrv = reinterpret_cast < SdCard * > ( drv );
-		if(pDrv && !pDrv->errorCode()) {
+		if(pDrv && !pDrv->errorCode()) { // Setup SDIO block device.
 			bd_list[dev].pSD = pDrv;
 			bd_list[dev].dev_id = dev;
 			bd_list[dev].connected = true;
 			sprintf(bd_list[dev].name,"%s",deviceName[dev]);
 			bd_list[dev].pbdev = ext4_blkdev_list[dev];
 		} else {
-			sprintf(bd_list[dev].name,"UnKnown");
-			bd_list[dev].connected = false;
-			bd_list[dev].pSD = NULL;
-			bd_list[dev].pbdev = NULL;
-			bd_list[dev].dev_id = -1;
+			clr_BDL_entry(dev);
 			return ENODEV;
 		}
 	} else {
-		return ENODEV;
+		return ENODEV; // No block devices detected at all !!
 	}
 	if(bd_list[dev].connected) {
 		for(int i = 0; i < 4; i++) {
@@ -503,7 +507,7 @@ int ext4FS::lwext_mount(uint8_t dev) {
 }
 
 //**********************************************************************
-// Cleanly unmount amd unregister  partition.
+// Cleanly unmount amd unregister partition.
 // Needs to be called before removing device!!!
 //**********************************************************************
 bool ext4FS::lwext_umount(uint8_t dev) {
@@ -516,7 +520,6 @@ bool ext4FS::lwext_umount(uint8_t dev) {
 //		Serial.printf("ext4_journal_stop: fail %d", r);
 //		return false;
 //	}
-//	ext4_device_unregister_all();
 	r = ext4_umount(mount_list[dev].pname);
 	if (r != EOK) {
 		Serial.printf("ext4_umount: fail %d\n", r);

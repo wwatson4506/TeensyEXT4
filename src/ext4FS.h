@@ -39,7 +39,7 @@
 
 // Uncomment USE_RW_LEDS below to show read/write activity. LED pins are defined
 // in ext4FS.h.
-#define USE_RW_LEDS 0
+#define USE_RW_LEDS 1
 
 // Setup debugging LED pin defs. (Uncomment
 // Used mainly to see the activity of reads and writes.
@@ -114,8 +114,8 @@ typedef struct bd_mounts {
 	bool mounted = false;
 }bd_mounts_t;
 
-static block_device_t bd_list[CONFIG_EXT4_BLOCKDEVS_COUNT];
-static bd_mounts_t mount_list[MAX_MOUNT_POINTS];
+DMAMEM static block_device_t bd_list[CONFIG_EXT4_BLOCKDEVS_COUNT];
+DMAMEM static bd_mounts_t mount_list[MAX_MOUNT_POINTS];
 
 // Stat struct. File type and size.
 typedef struct {
@@ -353,6 +353,7 @@ public:
 		return true;
 	}
 	void init();
+	bool clr_BDL_entry(uint8_t dev);
 	int init_block_device(void *drv, uint8_t dev);
 	bool scan_mbr(uint8_t dev);
 	bool begin(uint8_t device);
