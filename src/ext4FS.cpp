@@ -109,7 +109,7 @@ void ext4FS::dumpMountList(void) {
 // Dump block device list.
 void ext4FS::dumpBDList(void) {
 	for (int i = 0; i < CONFIG_EXT4_BLOCKDEVS_COUNT; i++) {
-		if(mount_list[i].parent_bd.connected) {
+		if(mount_list[i].parent_bd.connected && bd_list[i].dev_id >= 0) {
 			Serial.printf("bd_list[%d].dev_id = %d\n", i, bd_list[i].dev_id);
 			Serial.printf("bd_list[%d].name = %s\n", i, bd_list[i].name);
 			Serial.printf("bd_list[%d].*pDrive = %d (USB)\n", i, bd_list[i].pDrive);
