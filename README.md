@@ -1,71 +1,41 @@
-# TeensyEXT4V3
+# DiskIO
 
-This is the second version of lwext4 adapted for use with the Teensy T3.6/T4.x. 
+## This repository attempts to integrate all of the various filesystems for the T3.6/T4.0/T4.1/MicroMod.
 
-This is the start of being able to use lwext4 with the T36/T40/T41. This version supports MSC USB drives and SD cards (Teensy built in only). It has only been tested with Arduino 1.8.19 and Teenyduino 1.57B3. It can mount an ext4 formatted USB drive or SD card.
-
-You will need Arduino 1.8.19 and:
-
-https://forum.pjrc.com/threads/70455-Teensyduino-1-57-Beta-3
-
-or Teensyduino-1.57:
-
-https://www.pjrc.com/teensy/td_download.html
-
-UPDATES:
-*  This version eliminates the need for the LWextFS class. Examples updated.
-*  FS abstraction layer now supported. 
-*  Formatting USB and SD devices now Supported.
-*  Copying files.
-*  Teensy MTP supported.
-
-You will need a USB drive or SD card formatted as ext4 with a volume label to identify the drive. Compile any of the TeensyEXT4 examples and upload to the Teensy.
-
-There is a config file 'ext4_config.h' in the 'src' directory. The default settings are the best ones so far for the Teensy. Be aware that journaling is not working right now so that has been disabled.
-
-For reference:
-
-https://github.com/gkostka/lwext4 Original Version.
-
-https://github.com/gkostka/stm32f429disco-lwext4 An example using USB drive as a block device.
-
-https://github.com/autoas/as/tree/master/com/as.infrastructure/system/fs  
-
-Example Sketches:
-- ext4Usage.ino This sketch contains information on the general usage of TeensyEXT4 and is similar to LittleFS_Usage and SdFat_Usage.
-- ext4DeviceInfo.ino Gives various stats about a mounted block device and it's partitions.
-- ListFiles.ino Gives a directory listing.
-- Files.ino Tests file existance.
-- Datalogger.ino Logs ADC data to a block device.
-- Dump.ino Dumps the data from Datalogger.ino.
-- ReadWrite.ino Demonstrates reading and writing test strings to a block device (append mode).
-- wavePlayerExt4.ino A sketch that plays wav files.
-- copyFilesUSB.ino Copy files between USB and SD devices. 2 USB and 1 SD device supported.
-- ext4Formatter.ino Formats a USB or SD device to ext4.
-
-WARNING: Fromatting an SD device works good but formatting a USB device is very SLOW! You might as well take a trip to the Bahamas and when you get back it might be done:)
-Have not figured out why yet.
-
-These are the example files so far.
-At this time it parallels SD and LittleFS fairly close.
-
-TODO:
-- Set and get user and group permissions.
-- Set and get user and group ID's.
-- Implement chdir().
-
-There is a lot of capability in lwext4 that has not yet been added. Some of it may not be practical to use in this application.
-
-Limitations:
- Four physical drives with four partitions each are supported.
- The built in SD card device is uses sdd1 to sdd3 exclusively.
- Note: lwext4 only supports four mounted partitions total
-       at any one time right now.
- TODO: Explore options to increase this to 16 partitions.
+Required libraries:
  
- WARNING: ext4 MUST be cleanly un-mounted to avoid data loss.
-          'myext4fs1.lwext_umount(sdxx);'
+ https://github.com/wwatson4506/USBHost_t36/tree/ext4FS_addition
+ 
+ https://github.com/wwatson4506/TeensyEXT4/tree/TeensyEXT4V3
+ 
+ https://github.com/wwatson4506/Arduino-Teensy-Codec-lib (Only needed if paly music files enabled)
 
-This is still very much work in progress # WIP
+ 
+Built using Arduino 1.8.16 and Teensyduino 1.55 release version.
 
-More to come...
+The main goal is to be able to unify all of the different access methods of USBFat, SdFat and LittleFs into one. LittleFS has been a bit of a challenge but is working. So far just QPINAND has beeen tested. I want to add the rest of the LittleFS devices later. 
+
+This is work in progress and is strictly experimentation and/or proof of concept. 
+
+The objectives are:
+
+- Support up to 4 USB Mass Storage devices, the native SDIO SD card and a SPI SD card and LittleFS devices.
+- Allow for 4 partitions per Mass Storage device Except LittleFS. Total of 32 logical drives with all types of LittleFS devices.
+- Use a volume name for access to each logical drive or use an index number for array of mounted logical drives. LittleFS will   use defined device names.
+- Be able to set a default drive (change drive).
+- Be able to parse a full path spec including drive spec, relative path specs and wildcard processing.
+- Use a more standard directory listing including time and dates stamps using the Teensy builtin RTC.
+- Properly process hot plugging including swithching default drive to next available drive if default drive is unplugged.
+- Keep all of this as compatible with SD and FS and LittleFS as possible.
+- Play wave files from any logical drive. Cannot use the same device if playing a wave file from it. Other devices can be accessed as it is non-blocking. Two files from FrankB's Teensy-WavePlayer https://github.com/FrankBoesing/Teensy-WavePlayer were modified for use with diskIO and are in the src directory. 'play_wav.cpp' and 'play_wav.h'.
+
+Examples:
+- DiskIOTesting.ino: A simple test of some Diskio functions.
+- DiskIOMB.ino: A simple cli for testing most diskIO functions and demonstrating unified access to different types of Mass Storage devices on the Teensy. (SdFat, UsbFat and LittleFS). Being able to add commands so easly is really helpfull for debugging.
+- Hot plugging now supports unplugging the default device and switching to the next available device. This is not recommended if the device is in use.
+- DiskIOMB is a partialy modified version of microBox for testing found here:
+http://sebastian-duell.de/en/microbox/index.html
+
+In DiskIOMB type help at the command line to see the commands that were modified and commands that were added for use with Teensy.
+
+So far most of this is working well but still needs a lot more work. Really don't know if this is something that might be useful but it is fun to play with:)
