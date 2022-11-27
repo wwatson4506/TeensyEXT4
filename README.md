@@ -12,7 +12,7 @@ or
 
 https://forum.pjrc.com/threads/71074-Teensyduino-1-58-Beta-2
 
-UPDATES:
+#### UPDATES:
 *  This version eliminates the need for the LWextFS class. Examples updated.
 *  FS abstraction layer now supported. 
 *  Formatting USB and SD devices now Supported.
@@ -31,7 +31,7 @@ https://github.com/gkostka/stm32f429disco-lwext4 An example using USB drive as a
 
 https://github.com/autoas/as/tree/master/com/as.infrastructure/system/fs  
 
-Example Sketches:
+#### Example Sketches:
 - ext4Usage.ino This sketch contains information on the general usage of TeensyEXT4 and is similar to LittleFS_Usage and SdFat_Usage.
 - ext4DeviceInfo.ino Gives various stats about a mounted block device and it's partitions.
 - ListFiles.ino Gives a directory listing.
@@ -43,28 +43,30 @@ Example Sketches:
 - copyFilesUSB.ino Copy files between USB and SD devices. 2 USB and 1 SD device supported.
 - ext4Formatter.ino Formats a USB or SD device to ext4.
 
-WARNING: Fromatting an SD device works good but formatting a USB device is very SLOW! You might as well take a trip to the Bahamas and when you get back it might be done:)
+#### WARNING: Fromatting an SD device works good but formatting a USB device is very SLOW! You might as well take a trip to the Bahamas and when you get back it might be done:)
 Have not figured out why yet.
 
 These are the example files so far.
 At this time it parallels SD and LittleFS fairly close.
 
-TODO:
+#### TODO:
 - Set and get user and group permissions.
 - Set and get user and group ID's.
 - Implement chdir().
 
 There is a lot of capability in lwext4 that has not yet been added. Some of it may not be practical to use in this application.
 
-Limitations:
+#### Limitations:
  Four physical drives with four partitions each are supported.
  The built in SD card device is uses sdd1 to sdd3 exclusively.
  Note: lwext4 only supports four mounted partitions total
        at any one time right now.
- TODO: Explore options to increase this to 16 partitions.
+#### TODO: Explore options to increase this to 16 partitions.
  
- WARNING: ext4 MUST be cleanly un-mounted to avoid data loss.
-          'myext4fs1.lwext_umount(sdxx);'
+ ## WARNING: ext4 MUST be cleanly un-mounted to avoid data loss.
+ ##            'myext4fs1.lwext_umount(sdxx);'
+#### Fixes:
+ - Added missing ext4_unregister() to lwext4_umount().
 
 This is still very much work in progress # WIP
 
