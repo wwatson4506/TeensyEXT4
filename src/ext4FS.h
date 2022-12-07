@@ -48,7 +48,7 @@
 
 // Ext2/3/4 File system type in MBR.
 #define EXT4_TYPE 0x83
-#define BLOCK_SIZE 512
+#define EXT4_BLOCK_SIZE 512
 
 enum {USB_TYPE=0, SD_TYPE=CONFIG_EXT4_BLOCKDEVS_COUNT-1}; // what type of block device
 

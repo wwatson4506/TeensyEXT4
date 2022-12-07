@@ -42,21 +42,21 @@ static int ext4_bd_lock(struct ext4_blockdev *bdev);
 static int ext4_bd_unlock(struct ext4_blockdev *bdev);
 
 //******************************************************************************
-EXT4_BLOCKDEV_STATIC_INSTANCE(_ext4_bd,  BLOCK_SIZE, 0, ext4_bd_open,
+EXT4_BLOCKDEV_STATIC_INSTANCE(_ext4_bd,  EXT4_BLOCK_SIZE, 0, ext4_bd_open,
 			      ext4_bd_bread, ext4_bd_bwrite, ext4_bd_close,
 			      0, 0);
 #if CONFIG_EXT4_BLOCKDEVS_COUNT > 1
-EXT4_BLOCKDEV_STATIC_INSTANCE(_ext4_bd1,  BLOCK_SIZE, 0, ext4_bd_open,
+EXT4_BLOCKDEV_STATIC_INSTANCE(_ext4_bd1,  EXT4_BLOCK_SIZE, 0, ext4_bd_open,
 			      ext4_bd_bread, ext4_bd_bwrite, ext4_bd_close,
 			      0, 0);
 #endif
 #if CONFIG_EXT4_BLOCKDEVS_COUNT > 2
-EXT4_BLOCKDEV_STATIC_INSTANCE(_ext4_bd2,  BLOCK_SIZE, 0, ext4_bd_open,
+EXT4_BLOCKDEV_STATIC_INSTANCE(_ext4_bd2,  EXT4_BLOCK_SIZE, 0, ext4_bd_open,
 			      ext4_bd_bread, ext4_bd_bwrite, ext4_bd_close,
 			      0, 0);
 #endif
 #if CONFIG_EXT4_BLOCKDEVS_COUNT > 3
-EXT4_BLOCKDEV_STATIC_INSTANCE(_ext4_bd3,  BLOCK_SIZE, 0, ext4_bd_open,
+EXT4_BLOCKDEV_STATIC_INSTANCE(_ext4_bd3,  EXT4_BLOCK_SIZE, 0, ext4_bd_open,
 			      ext4_bd_bread, ext4_bd_bwrite, ext4_bd_close,
 			      0, 0);
 #endif
@@ -146,7 +146,7 @@ static int ext4_bd_open(struct ext4_blockdev *bdev)
 	} else {
 		if(!bd_list[index].pSD) return EIO;
 		bd_list[index].pbdev->part_offset = 0;
-		bd_list[index].pbdev->part_size = bd_list[index].pSD->sectorCount() * BLOCK_SIZE;
+		bd_list[index].pbdev->part_size = bd_list[index].pSD->sectorCount() * EXT4_BLOCK_SIZE;
 		bd_list[index].pbdev->bdif->ph_bcnt = bd_list[index].pSD->sectorCount();
 	}
     return EOK;
