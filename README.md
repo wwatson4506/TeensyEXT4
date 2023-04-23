@@ -2,15 +2,13 @@
 
 This is a working version of lwext4 adapted for use with the Teensy T3.6/T4.x. 
 
-This is the start of being able to use lwext4 with the T36/T40/T41 and so far MSC USB drives. It has only been tested with Arduino 1.8.19 and Teenyduino 1.57B2. It will mount an ext4 formatted USB drive through USBHost_t36 which is included in TD1.57B2.
+This is the start of being able to use lwext4 with the T36/T40/T41 and so far MSC USB drives. It has only been tested with Arduino 1.8.19 and Teenyduino 1.57B2 and up. It will mount an ext4 formatted USB drive through USBHost_t36 which is included in TD1.57B2 and up.
 
-You will need Arduino 1.8.19 and:
+# Now also works with Arduino-IDE.
 
-https://forum.pjrc.com/threads/70409-Teensyduino-1-57-Beta-2
-
-***************************************
-* UPDATE: Added support for SD cards. *
-***************************************
+****************************************
+* UPDATE: Added support for SDIO card. *
+****************************************
 In setup() you will find these lines. only one can be uncommented at a time.
 
   parent_blockdev = ext4_usb_bd_get();
