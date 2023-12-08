@@ -510,7 +510,7 @@ int ext4FS::lwext_mount(uint8_t dev) {
 // Cleanly unmount amd unregister partition.
 // Needs to be called before removing device!!!
 //**********************************************************************
-bool ext4FS::lwext_umount(uint8_t dev) {
+int ext4FS::lwext_umount(uint8_t dev) {
 	int r;
 		
 	ext4_cache_write_back(mount_list[dev].pname, 0);
@@ -523,12 +523,12 @@ bool ext4FS::lwext_umount(uint8_t dev) {
 	r = ext4_umount(mount_list[dev].pname);
 	if (r != EOK) {
 		Serial.printf("ext4_umount: fail %d\n", r);
-		return false;
+		return r;
 	}
 	// UnRegister partition by name.
 	r = ext4_device_unregister(mount_list[dev].pname);
 	mount_list[dev].mounted = false;
-	return true;
+	return EOK;
 }
 
 
