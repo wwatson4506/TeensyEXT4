@@ -472,7 +472,7 @@ public:
 	int lwext_init_devices(void);
 	bool scan_mbr(uint8_t dev);
 	int lwext_mount(uint8_t dev);
-	bool lwext_umount(uint8_t dev);
+	int lwext_umount(uint8_t dev);
 	int getMountStats(const char * vol, struct ext4_mount_stats *mpInfo);
 	int lwext_mkfs (struct ext4_blockdev *bdev, const char *label = "");
 protected:
