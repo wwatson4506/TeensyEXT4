@@ -525,8 +525,8 @@ int ext4FS::lwext_umount(uint8_t dev) {
 		Serial.printf("ext4_umount: fail %d\n", r);
 		return r;
 	}
-	// UnRegister partition by name.
-	r = ext4_device_unregister(mount_list[dev].pname);
+	// UnRegister partition by name. (Not Needed)
+//	r = ext4_device_unregister(mount_list[dev].pname);
 	mount_list[dev].mounted = false;
 	return EOK;
 }
