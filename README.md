@@ -1,6 +1,6 @@
 # TeensyEXT4V3
 
-This is the second version of lwext4 adapted for use with the Teensy T3.6/T4.x. 
+This is the third version of lwext4 adapted for use with the Teensy T3.6/T4.x. 
 
 This is the start of being able to use lwext4 with the T36/T40/T41. This version supports MSC USB drives and SD cards (Teensy built in only). It has only been tested with Arduino 1.8.19 and Teenyduino 1.57/1.58B2. It can mount an ext4 formatted USB drive or SD card.
 
