@@ -43,8 +43,11 @@
 
 // Setup debugging LED pin defs. (Uncomment
 // Used mainly to see the activity of reads and writes.
-#define WRITE_PIN			33		// Pin number of drive write activity led (RED LED).
-#define READ_PIN			34		// Pin number of drive read activity led (GREEN LED).
+//#define WRITE_PIN			33		// Pin number of drive write activity led (RED LED).
+//#define READ_PIN			34		// Pin number of drive read activity led (GREEN LED).
+
+// Un-comment to use exdt4FS lock, unlock. (Not setup yet!) 
+//#define USE_OS_LOCKS 1
 
 // Ext2/3/4 File system type in MBR.
 #define EXT4_TYPE 0x83

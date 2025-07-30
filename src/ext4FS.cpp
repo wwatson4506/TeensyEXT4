@@ -38,8 +38,11 @@ static int ext4_bd_bread(struct ext4_blockdev *bdev, void *buf, uint64_t blk_id,
 static int ext4_bd_bwrite(struct ext4_blockdev *bdev, const void *buf,
 			  uint64_t blk_id, uint32_t blk_cnt);
 static int ext4_bd_close(struct ext4_blockdev *bdev);
+
+#if defined(USE_OS_LOCKS)
 static int ext4_bd_lock(struct ext4_blockdev *bdev);
 static int ext4_bd_unlock(struct ext4_blockdev *bdev);
+#endif
 
 //******************************************************************************
 EXT4_BLOCKDEV_STATIC_INSTANCE(_ext4_bd,  EXT4_BLOCK_SIZE, 0, ext4_bd_open,
@@ -76,20 +79,21 @@ static struct ext4_blockdev * const ext4_blkdev_list[CONFIG_EXT4_BLOCKDEVS_COUNT
 #endif
 };
 
-static void mp_lock()
-{
+#if defined(USE_OS_LOCKS)
+static void mp_lock() {
 //	pthread_mutex_lock(&mp_mutex);
 }
 
-static void mp_unlock()
-{
+static void mp_unlock() {
 //	pthread_mutex_unlock(&mp_mutex);
 }
+
 
 static struct ext4_lock mp_lock_func = {
 	.lock		= mp_lock,
 	.unlock	  = mp_unlock
 };
+#endif
 
 // Dump mount list. mounted/unmounted
 void ext4FS::dumpMountList(void) {
@@ -238,21 +242,21 @@ static int ext4_bd_close(struct ext4_blockdev *bdev)
 //******************************************************************************
 // Not implemeted yet. TODO.
 //******************************************************************************
-static int ext4_bd_ctrl(struct ext4_blockdev *bdev, int cmd, void *args)
-{
+#if defined(USE_OS_LOCKS)
+static int ext4_bd_ctrl(struct ext4_blockdev *bdev, int cmd, void *args) {
 	(void)bdev;
 	return EOK;
 }
 
-static int ext4_bd_lock(struct ext4_blockdev *bdev)
-{
+static int ext4_bd_lock(struct ext4_blockdev *bdev) {
 	return 0;
 }
 
-static int ext4_bd_unlock(struct ext4_blockdev *bdev)
-{
+static int ext4_bd_unlock(struct ext4_blockdev *bdev) {
 	return 0;
 }
+#endif
+
 //******************************************************************************
 
 //******************************************************************************
@@ -389,7 +393,6 @@ int ext4FS::init_block_device(void *drv, uint8_t dev) {
 //******************************************************************************
 int ext4FS::lwext_stat(const char *filename, stat_t *buf) {
 	int r = ENOENT;
-
 	if(('\0' == TO_LWEXT_PATH(filename)[0])
 		|| (0 == strcmp(TO_LWEXT_PATH(filename),"/")) ) {// just the root
 		buf->st_mode = S_IFDIR;
