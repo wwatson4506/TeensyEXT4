@@ -483,7 +483,7 @@ static struct ext4_mountpoint *ext4_get_mount(const char *path)
 
 	return NULL;
 }
-
+#if CONFIG_JOURNALING_ENABLE
 static int __ext4_journal_start(const char *mount_point)
 {
 	int r = EOK;
@@ -642,7 +642,6 @@ static int __ext4_trans_stop(struct ext4_mountpoint *mp)
 	return r;
 }
 
-
 static void __ext4_trans_abort(struct ext4_mountpoint *mp)
 {
 	if (mp->fs.jbd_journal && mp->fs.curr_trans) {
@@ -670,6 +669,7 @@ int ext4_journal_stop(const char *mount_point)
 #endif
 	return r;
 }
+#endif // Global jounaling functions enable
 
 int ext4_recover(const char *mount_point)
 {
