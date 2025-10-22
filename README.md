@@ -14,7 +14,7 @@ https://www.pjrc.com/teensy/td_download.html
 *  Formatting USB and SD devices now Supported.
 *  Copying files.
 *  VGA_4bit_T4 now supported.
-*  
+  
 You will need a USB drive or SD card formatted as ext4 with a volume label to identify the drive. Compile any of the TeensyEXT4 examples and upload to the Teensy.
 
 There is a config file 'ext4_config.h' in the 'src' directory. The default settings are the best ones so far for the Teensy. Be aware that journaling is not working right now so that has been disabled.
