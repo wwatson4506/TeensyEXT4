@@ -1,24 +1,20 @@
-# TeensyEXT4V3
+# TeensyEXT4
 
-This is the third version of lwext4 adapted for use with the Teensy T3.6/T4.x. 
+This is the fourth version of lwext4 adapted for use with the Teensy T3.6/T4.x. 
 
 This is the start of being able to use lwext4 with the T36/T40/T41. This version supports MSC USB drives and SD cards (Teensy built in only). It has only been tested with Arduino 1.8.19 and Teenyduino 1.57/1.58B2. It can mount an ext4 formatted USB drive or SD card.
 
-You will need Arduino 1.8.19 and:
-
+You will need Arduino 1.8.19 or the Arduino IDE and Teensyduino 1.60B1 to 1.60B5.
+Teensyduino can be downloaded from here:
 https://www.pjrc.com/teensy/td_download.html
-
-or
-
-https://forum.pjrc.com/threads/71074-Teensyduino-1-58-Beta-2
 
 #### UPDATES:
 *  This version eliminates the need for the LWextFS class. Examples updated.
 *  FS abstraction layer now supported. 
 *  Formatting USB and SD devices now Supported.
 *  Copying files.
-*  Teensy MTP supported.
-
+*  VGA_4bit_T4 now supported.
+*  
 You will need a USB drive or SD card formatted as ext4 with a volume label to identify the drive. Compile any of the TeensyEXT4 examples and upload to the Teensy.
 
 There is a config file 'ext4_config.h' in the 'src' directory. The default settings are the best ones so far for the Teensy. Be aware that journaling is not working right now so that has been disabled.
@@ -41,7 +37,7 @@ https://github.com/autoas/as/tree/master/com/as.infrastructure/system/fs
 - ReadWrite.ino Demonstrates reading and writing test strings to a block device (append mode).
 - wavePlayerExt4.ino A sketch that plays wav files.
 - copyFilesUSB.ino Copy files between USB and SD devices. 2 USB and 1 SD device supported.
-- ext4Formatter.ino Formats a USB or SD device to ext4.
+- ext4Formatter.ino Formats a USB or SD device to ext4. (Very Slow on big drives)
 
 #### WARNING: Fromatting an SD device works good but formatting a USB device is very SLOW! You might as well take a trip to the Bahamas and when you get back it might be done:)
 Have not figured out why yet.
